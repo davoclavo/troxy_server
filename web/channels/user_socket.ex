@@ -2,7 +2,7 @@ defmodule Davo.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  # channel "rooms:*", Davo.RoomChannel
+  channel "users:*", Davo.UsersChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket
