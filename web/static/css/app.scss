@@ -1,0 +1,26 @@
+@import "~normalize.css/normalize.css";
+
+@import "variables";
+
+.conn {
+  margin: 10px;
+
+  .request {
+    .method {
+      font-weight: bold;
+      margin-right: 1em;
+    }
+
+    .host {
+
+    }
+
+    .path {
+
+    }
+  }
+
+  .response {
+    margin-top: 10px;
+  }
+}

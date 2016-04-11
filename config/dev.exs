@@ -11,7 +11,8 @@ config :davo, Davo.Endpoint,
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
-  watchers: [node: ["node_modules/webpack/bin/webpack.js", "--watch-stdin", "--progress", "--colors"]]
+  watchers: [npm: ["start"]]
+  # watchers: [node: ["node_modules/webpack/bin/webpack.js", "--watch-stdin", "--progress", "--colors"]]
 
 # Watch static and templates for browser reloading.
 config :davo, Davo.Endpoint,
@@ -20,6 +21,7 @@ config :davo, Davo.Endpoint,
       ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
       ~r{priv/gettext/.*(po)$},
       ~r{web/views/.*(ex)$},
+      ~r{web/troxy/.*(ex)$},
       ~r{web/templates/.*(eex)$}
     ]
   ]

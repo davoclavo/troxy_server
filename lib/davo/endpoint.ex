@@ -1,5 +1,6 @@
 defmodule Davo.Endpoint do
   use Phoenix.Endpoint, otp_app: :davo
+  plug Davo.Troxy.Pipeline
 
   socket "/socket", Davo.UserSocket
 
