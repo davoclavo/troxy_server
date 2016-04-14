@@ -20,14 +20,15 @@ defmodule Davo.Troxy.Pipeline do
   def skip_self_requests(conn, _opts) do
     # TODO: Use URI.parse for the port and subdomains
     host = Application.get_env(:davo, Davo.Endpoint)[:url][:host]
-    case conn.host do
-      ^host ->
-        conn
-        |> Plug.Conn.assign(:skip_troxy, true)
-      _ ->
-        # Proxy request
-        conn
-    end
+    ip = Application.get_env(:davo, Davo.Endpoint)[:url][:ip]
+
+    [host, ip, "localhost"]
+    |> Enum.any?(&(&1 == conn.host))
+    |> if do
+         Plug.Conn.assign(conn, :skip_troxy, true)
+       else
+         conn
+       end
   end
 
   # SSL - http://www.phoenixframework.org/v1.0.0/docs/configuration-for-ssl

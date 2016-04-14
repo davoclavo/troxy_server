@@ -13,7 +13,11 @@ use Mix.Config
 # which you typically run after static files are built.
 config :davo, Davo.Endpoint,
   http: [port: {:system, "PORT"}],
-  url: [host: System.get_env("HOSTNAME"), port: 80],
+  url: [host: System.get_env("HOSTNAME"),
+        port: 80,
+        # Used to pattern match in the Troxy pipeline
+        ip: System.get_env("PUBLIC_IP")
+       ],
   cache_static_manifest: "priv/static/manifest.json"
 
 # Do not print debug messages in production

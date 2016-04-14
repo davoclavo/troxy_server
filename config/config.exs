@@ -7,7 +7,9 @@ use Mix.Config
 
 # Configures the endpoint
 config :davo, Davo.Endpoint,
-  url: [host: "localhost"],
+  url: [host: "localhost",
+        port: 4000,
+        ip: "127.0.0.1"],
   root: Path.dirname(__DIR__),
   secret_key_base: "p2sDJZdjQEO3r4s3xFoA2XizTjouA7hPnfccEPK4F6K9sLXH/2n5EbyQZUc8Uuxl",
   render_errors: [accepts: ~w(html json)],
