@@ -1,10 +1,14 @@
 @import "~normalize.css/normalize.css";
-
 @import "variables";
 
-.conn {
-  margin: 10px;
+/* bootstrap-sass can't find the icon fonts */
+$icon-font-path: "~bootstrap-sass/assets/fonts/bootstrap/";
+@import "bootstrap-sass/assets/stylesheets/bootstrap.scss";
 
+#conns {
+}
+
+.conn {
   .request {
     .method {
       font-weight: bold;

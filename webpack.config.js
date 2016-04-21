@@ -32,7 +32,6 @@
 
 
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
-// var CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   devtool: "source-map",
@@ -47,7 +46,7 @@ module.exports = {
 
   resolve: {
     modulesDirectories: [ "node_modules", __dirname + "/web/static/js" ],
-    extensions: [ "", ".js", ".json", ".jsx", ".scss" ]
+    extensions: [ "", ".js", ".json", ".jsx" ]
   },
 
   module: {
@@ -55,7 +54,10 @@ module.exports = {
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
-        loader: "babel-loader",
+        loader: "babel",
+        query: {
+          presets: ["es2015"]
+        }
       }, {
         test: /\.css$/,
         loader: ExtractTextPlugin.extract("style", "css")
@@ -65,12 +67,15 @@ module.exports = {
           "style",
           "css!sass?includePaths[]=" + __dirname +  "/node_modules"
         )
+      },
+      {
+        test: /\.(ttf|eot|svg|woff2?)$/,
+        loader : "file-loader?name=fonts/[name].[ext]"
       }
     ]
   },
 
   plugins: [
     new ExtractTextPlugin("css/app.css"),
-    // new CopyWebpackPlugin([{ from: "./web/static/assets" }])
   ]
 }

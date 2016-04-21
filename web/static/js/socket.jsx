@@ -1,11 +1,12 @@
 import {Socket} from 'phoenix'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import {Table, Column, Cell} from 'fixed-data-table';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import classNames from 'classnames'
 import moment from 'moment'
 
-// require('css/app')
+/* require('css/app') */
 
 export let socket = new Socket('/socket', {params: {token: window.userToken}})
 
@@ -30,24 +31,16 @@ channel.join()
   .receive('ok', resp => { console.log('Joined davo successfully'); })
   .receive('error', resp => { console.log('Unable to join', resp) })
 
-class Header extends React.Component {
-  render() {
-    return (
-      <li>{this.props.name}: {this.props.value}</li>
-    )
-  }
-}
-
-class HeaderList extends React.Component {
+class Headers extends React.Component {
   render() {
     return(
-      <ul>
-      {Object.keys(this.props.headers).map((name) => {
-        return (
-          <Header name={name} value={this.props.headers[name]} key={name} />
-        )
-      })}
-      </ul>
+      <ol>
+        {Object.keys(this.props.headers).map((name, index) => {
+           return (
+             <li key={index}>{name}: {this.props.headers[name]}</li>
+           )
+         })}
+      </ol>
     )
   }
 }
@@ -55,15 +48,15 @@ class HeaderList extends React.Component {
 class Request extends React.Component {
   render() {
     const conn = this.props.conn
-    console.dir(conn)
     return(
       <div className='request'>
         <span className='method'>{conn.method}</span>
         <span className='host'>{conn.host}</span>
         <span className='port'>:{conn.port}</span>
         <span className='path'>{conn.request_path}</span>
+
         <span className='query_string'>{conn.query_string}</span>
-        <HeaderList className='req_headers' headers={conn.req_headers} />
+        <Headers className='req_headers' headers={conn.req_headers} />
       </div>
     )
   }
@@ -74,7 +67,8 @@ class Response extends React.Component {
     const conn = this.props.conn
     return(
       <div className='response'>
-        <HeaderList className='resp_headers' headers={conn.resp_headers} />
+        <span className='status'>{conn.status}</span>
+        <Headers className='resp_headers' headers={conn.resp_headers} />
         {/* TODO: Body */}
         {/* TODO: Timing */}
       </div>
@@ -82,19 +76,7 @@ class Response extends React.Component {
   }
 }
 
-class Conn extends React.Component {
-  render() {
-    const conn = this.props.conn
-    return(
-      <div className='conn'>
-        <Request conn={conn} />
-        <Response conn={conn} />
-      </div>
-    )
-  }
-}
-
-class ListItem extends React.Component {
+class ConnRow extends React.Component {
   static defaultProps() {
     return {
       selected: false,
@@ -104,69 +86,70 @@ class ListItem extends React.Component {
   render() {
     let classes = classNames({
       'is-selected': this.props.selected,
-      'is-focused': this.props.focused
+      'is-focused': this.props.focused,
+      'conn': true
     })
     return(
-      <li className={classes}>
-        {this.props.child}
-      </li>
+      <tr className={classes}>
+        <td>
+          {this.props.conn.assigns.id}
+        </td>
+        <td>
+          <Request conn={this.props.conn} />
+        </td>
+        <td>
+          <Response conn={this.props.conn} />
+        </td>
+      </tr>
     )
   }
 }
 
-
-class SelectableList extends React.Component {
-  static defaultProps() {
-    return {
-      children: []
-    }
-  }
-  onKeyDown(event) {
-    console.log(event)
-  }
-  render() {
-      const childNodes = this.props.children.map((child, key) => {
-        return(<ListItem child={child} key={key} />)
-    })
-    return (
-      <ul onKeyDown={this.onKeyDown}>
-        {childNodes}
-      </ul>
-    )
-  }
-}
-
-class ConnList extends React.Component {
+class ConnTable extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      conns: {}
+      conns: []
     }
   }
   componentDidMount() {
     channel.on('conn', conn => {
+      console.dir(conn)
       // Should  only have one key
-      Object.keys(conn).map(id => {
-        let conns = this.state.conns
-        conns[id] = conn[id]
+      let conns = this.state.conns
+      conns.push(conn)
 
-        this.setState({conns: conns})
-      })
+      this.setState({conns: conns})
     })
   }
+  onKeyDown(event) {
+    console.log(e)
+  }
   render() {
-    const connComponents = Object.keys(this.state.conns).map(id => {
-      const conn = this.state.conns[id]
-      return(<Conn conn={conn} key={id}/>)
+    const rowNodes = this.state.conns.map(conn => {
+      return(<ConnRow conn={conn} key={conn.assigns.id}/>)
     })
     return (
-      <SelectableList children={connComponents} />
+      <div className="table-responsive" onKeyDown={this.onKeyDown}>
+        <table className="table table-striped">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Request</th>
+              <th>Response</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rowNodes}
+          </tbody>
+        </table>
+      </div>
     )
   }
 }
 
 ReactDOM.render(
-    <ConnList />,
+  <ConnTable />,
   document.getElementById('conns')
 )
 

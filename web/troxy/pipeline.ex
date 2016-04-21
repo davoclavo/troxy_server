@@ -31,6 +31,7 @@ defmodule Davo.Troxy.Pipeline do
        end
   end
 
+
   # SSL - http://www.phoenixframework.org/v1.0.0/docs/configuration-for-ssl
 
   # http://stackoverflow.com/questions/12994611/relative-urls-in-a-proxied-website-dont-work
@@ -51,7 +52,8 @@ defmodule Davo.Troxy.Pipeline do
 
     Logger.info("Request proxied")
     [conn_id] = Plug.Conn.get_resp_header(conn, "x-request-id")
-    Davo.Endpoint.broadcast("users:new", "conn", Map.new([{conn_id, conn}]))
+    conn = Plug.Conn.assign(conn, :id, conn_id)
+    Davo.Endpoint.broadcast("users:new", "conn", conn)
     conn
   end
 
@@ -60,24 +62,39 @@ defmodule Davo.Troxy.Pipeline do
     # require IEx
     # IEx.pry
 
-    [conn_id] = Plug.Conn.get_resp_header(conn, "x-request-id")
     Logger.info("Response proxied")
-    Davo.Endpoint.broadcast("users:new", "conn", Map.new([{conn_id, conn}]))
+    [conn_id] = Plug.Conn.get_resp_header(conn, "x-request-id")
+    conn = Plug.Conn.assign(conn, :id, conn_id)
+    Davo.Endpoint.broadcast("users:new", "conn", conn)
 
     conn
     # |> Plug.Conn.delete_resp_header("x-request-id")
+    # TODO: Remove nginx headers for now
+    # |> Plug.Conn.delete_resp_header("x-forwarded-id")
+  end
+
+  def broadcast_conn(conn) do
+    Davo.Endpoint.broadcast("users:new", "conn", conn)
+  end
+
+  def broadcast_demo do
+    Davo.Repo.get_demo
+    |> Enum.map(&broadcast_conn/1)
   end
 end
 
 defimpl Poison.Encoder, for: Plug.Conn do
   def encode(conn, options) do
     # peer = conn.peer
+
+    # kwlists to maps to be able to JSON encodify easily
     req_headers = Enum.into(conn.req_headers, %{})
     resp_headers = Enum.into(conn.resp_headers, %{})
 
     conn
-    |> Map.take([:scheme, :host, :port, :method, :request_path, :query_string])
+    |> Map.take([:scheme, :host, :port, :method, :request_path, :query_string, :status, :assigns])
     |> Map.merge(%{req_headers: req_headers, resp_headers: resp_headers})
     |> Poison.encode!
   end
 end
+
