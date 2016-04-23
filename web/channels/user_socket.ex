@@ -21,6 +21,7 @@ defmodule Davo.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   def connect(_params, socket) do
+    Task.start_link(fn -> :timer.sleep(1000); Davo.Troxy.Pipeline.broadcast_demo end)
     {:ok, socket}
   end
 

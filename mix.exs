@@ -30,11 +30,13 @@ defmodule Davo.Mixfile do
   #
   # Type `mix help deps` for examples and options.
   defp deps do
-    [{:phoenix, "~> 1.1.4"},
+    # [{:phoenix, "~> 1.1.4"},
+    [{:phoenix, github: "phoenixframework/phoenix", override: true},
      {:postgrex, ">= 0.0.0"},
      {:phoenix_ecto, "~> 2.0"},
      {:phoenix_html, "~> 2.4"},
-     {:phoenix_live_reload, "~> 1.0", only: :dev},
+     # {:phoenix_live_reload, "~> 1.0", only: :dev},
+     {:phoenix_live_reload, github: "phoenixframework/phoenix_live_reload", only: :dev},
      {:gettext, "~> 0.9"},
      {:cowboy, "~> 1.0"},
      # {:troxy, path: "../troxy" },

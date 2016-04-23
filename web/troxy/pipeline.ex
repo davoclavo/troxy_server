@@ -9,8 +9,9 @@ defmodule Davo.Troxy.Pipeline do
   # plug :non_authoritative_info # send 203 responses instead of 200 if content is modified
 
   plug Plug.RequestId
+  plug :remove_req_headers
   use Troxy.Interfaces.Plug
-
+  plug :remove_resp_headers
 
   ########################
   # TODO: Move these to Troxy.Interfaces.
@@ -31,6 +32,18 @@ defmodule Davo.Troxy.Pipeline do
        end
   end
 
+
+  def remove_req_headers(conn, _opts) do
+    conn
+    # Remove nginx headers
+    |> Plug.Conn.delete_req_header("x-forwarded-id")
+  end
+
+  def remove_resp_headers(conn, _opts) do
+    conn
+    |> Plug.Conn.delete_resp_header("x-request-id") # Added by Plug.RequestId
+    |> Plug.Conn.delete_resp_header("cache-control") # Added by some Plug
+    end
 
   # SSL - http://www.phoenixframework.org/v1.0.0/docs/configuration-for-ssl
 
@@ -59,18 +72,11 @@ defmodule Davo.Troxy.Pipeline do
 
 
   def downstream_handler(conn) do
-    # require IEx
-    # IEx.pry
-
     Logger.info("Response proxied")
     [conn_id] = Plug.Conn.get_resp_header(conn, "x-request-id")
     conn = Plug.Conn.assign(conn, :id, conn_id)
     Davo.Endpoint.broadcast("users:new", "conn", conn)
-
     conn
-    # |> Plug.Conn.delete_resp_header("x-request-id")
-    # TODO: Remove nginx headers for now
-    # |> Plug.Conn.delete_resp_header("x-forwarded-id")
   end
 
   def broadcast_conn(conn) do

@@ -34,7 +34,7 @@ channel.join()
 class Headers extends React.Component {
   render() {
     return(
-      <ol>
+      <ol className="headers">
         {Object.keys(this.props.headers).map((name, index) => {
            return (
              <li key={index}>{name}: {this.props.headers[name]}</li>
@@ -52,7 +52,7 @@ class Request extends React.Component {
       <div className='request'>
         <span className='method'>{conn.method}</span>
         <span className='host'>{conn.host}</span>
-        <span className='port'>:{conn.port}</span>
+        :<span className='port'>{conn.port}</span>
         <span className='path'>{conn.request_path}</span>
 
         <span className='query_string'>{conn.query_string}</span>

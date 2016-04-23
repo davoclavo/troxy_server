@@ -13,8 +13,12 @@
 
   <body>
     <div class="container-fluid">
-      <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
-      <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
+      <%= if info = get_flash(@conn, :info) do %>
+        <p class="alert alert-info" role="alert"><%= info %></p>
+      <% end %>
+      <%=  if error = get_flash(@conn, :error) do %>
+        <p class="alert alert-danger" role="alert"><%= error %></p>
+      <% end %>
 
       <%= render @view_module, @view_template, assigns %>
 

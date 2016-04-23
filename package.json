@@ -35,7 +35,7 @@
     "bootstrap-sass": "^3.3.6"
   },
   "scripts": {
-    "start": "webpack --watch-stdin --colors --progress",
+    "start": "webpack --watch-stdin --colors",
     "compile": "webpack -p"
   },
   "directories": {

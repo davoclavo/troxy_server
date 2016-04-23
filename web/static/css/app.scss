@@ -5,26 +5,39 @@
 $icon-font-path: "~bootstrap-sass/assets/fonts/bootstrap/";
 @import "bootstrap-sass/assets/stylesheets/bootstrap.scss";
 
+.container-fluid {
+  padding: 0;
+}
+
 #conns {
 }
 
 .conn {
+  font-family: monospace;
+
+  .host {
+
+  }
+
+  .path {
+
+  }
+
+  .headers {
+    list-style-type: none;
+    padding-left: 0;
+  }
+
   .request {
     .method {
       font-weight: bold;
       margin-right: 1em;
     }
-
-    .host {
-
-    }
-
-    .path {
-
-    }
   }
 
   .response {
-    margin-top: 10px;
+    .status {
+      font-weight: bold;
+    }
   }
 }
