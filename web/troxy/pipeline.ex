@@ -9,6 +9,7 @@ defmodule Davo.Troxy.Pipeline do
   # plug :non_authoritative_info # send 203 responses instead of 200 if content is modified
 
   plug Plug.RequestId
+  plug :assign_request_id
   plug :remove_req_headers
   use Troxy.Interfaces.Plug
   plug :remove_resp_headers
@@ -17,6 +18,11 @@ defmodule Davo.Troxy.Pipeline do
   # TODO: Move these to Troxy.Interfaces.
   # Troxy helper functions
   ########################
+
+  def assign_request_id(conn, _opts) do
+    [conn_id] = Plug.Conn.get_resp_header(conn, "x-request-id")
+    Plug.Conn.assign(conn, :id, conn_id)
+  end
 
   def skip_self_requests(conn, _opts) do
     # TODO: Use URI.parse for the port and subdomains
@@ -57,30 +63,33 @@ defmodule Davo.Troxy.Pipeline do
   # Troxy in-module handlers
   ##########################
 
-  def upstream_handler(conn) do
+  def req_handler(conn) do
     # Is broadcast async?? if not, I think it should
 
     # require IEx
     # IEx.pry
-
     Logger.info("Request proxied")
-    [conn_id] = Plug.Conn.get_resp_header(conn, "x-request-id")
-    conn = Plug.Conn.assign(conn, :id, conn_id)
-    Davo.Endpoint.broadcast("users:new", "conn", conn)
+    Davo.Endpoint.broadcast("users:new", "conn:req", conn)
     conn
   end
 
 
-  def downstream_handler(conn) do
+  def resp_handler(conn) do
+    # require IEx
+    # IEx.pry
     Logger.info("Response proxied")
-    [conn_id] = Plug.Conn.get_resp_header(conn, "x-request-id")
-    conn = Plug.Conn.assign(conn, :id, conn_id)
-    Davo.Endpoint.broadcast("users:new", "conn", conn)
+    Davo.Endpoint.broadcast("users:new", "conn:resp", conn)
+    conn
+  end
+
+  def resp_body_handler(conn, body_chunk) do
+    Logger.info("Response body chunk")
+    Davo.Endpoint.broadcast("users:new", "conn:resp_body_chunk", body_chunk)
     conn
   end
 
   def broadcast_conn(conn) do
-    Davo.Endpoint.broadcast("users:new", "conn", conn)
+    Davo.Endpoint.broadcast("users:new", "conn:req", conn)
   end
 
   def broadcast_demo do

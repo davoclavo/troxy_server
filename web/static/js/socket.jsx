@@ -1,7 +1,6 @@
 import {Socket} from 'phoenix'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {Table, Column, Cell} from 'fixed-data-table';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import classNames from 'classnames'
 import moment from 'moment'
@@ -113,7 +112,7 @@ class ConnTable extends React.Component {
     }
   }
   componentDidMount() {
-    channel.on('conn', conn => {
+    channel.on('conn:req', conn => {
       console.dir(conn)
       // Should  only have one key
       let conns = this.state.conns
