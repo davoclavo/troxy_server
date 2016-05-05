@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom'
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import classNames from 'classnames'
 import moment from 'moment'
+import rasterizeHTML from 'rasterizehtml'
 
 /* require('css/app') */
 
@@ -44,6 +45,32 @@ class Headers extends React.Component {
   }
 }
 
+class Body extends React.Component {
+
+  render() {
+    /* return(
+       <span className='body'>{this.props.body}</span>
+       ) */
+    /* return(
+       <iframe srcDoc={this.props.body}></iframe>
+       ) */
+    let element
+    if(this.props.more_body){
+      element = <div/>
+    } else {
+      element = <canvas className="body" ref={(ref) => this.rasterizingCanvas = ref}></canvas>
+    }
+    return element
+  }
+  componentDidUpdate() {
+    if(!this.props.more_body){
+      console.dir(rasterizeHTML)
+      console.dir(this.rasterizingCanvas)
+      rasterizeHTML.drawHTML(this.props.body, this.rasterizingCanvas)
+    }
+  }
+}
+
 class Request extends React.Component {
   render() {
     const conn = this.props.conn
@@ -62,13 +89,39 @@ class Request extends React.Component {
 }
 
 class Response extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      body: '',
+      more_body: true,
+      render: 'rasterizehtml',
+      conn: {
+        status: '',
+        resp_headers: {}
+      }
+    }
+  }
+  componentDidMount() {
+    const conn_id = this.props.conn.assigns.id
+    channel.on('conn:resp' + conn_id, conn => {
+      this.setState({
+        conn: conn
+      })
+    })
+    channel.on('conn:resp_body_chunk' + conn_id, data => {
+      let body = this.state.body + data.body_chunk
+      // TODO: Merge, not replace state
+      this.setState({body: body, more_body: data.more_body})
+    })
+
+  }
   render() {
     const conn = this.props.conn
     return(
       <div className='response'>
-        <span className='status'>{conn.status}</span>
-        <Headers className='resp_headers' headers={conn.resp_headers} />
-        {/* TODO: Body */}
+        <span className='status'>{this.state.conn.status}</span>
+        <Headers className='resp_headers' headers={this.state.conn.resp_headers} />
+        <Body className='resp_body' body={this.state.body} more_body={this.state.more_body}/>
         {/* TODO: Timing */}
       </div>
     )

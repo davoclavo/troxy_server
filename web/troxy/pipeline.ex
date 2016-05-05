@@ -8,11 +8,32 @@ defmodule Davo.Troxy.Pipeline do
   # plug :disable_js # disable js scripts
   # plug :non_authoritative_info # send 203 responses instead of 200 if content is modified
 
+  # plug :plug_uri
+
   plug Plug.RequestId
   plug :assign_request_id
   plug :remove_req_headers
   use Troxy.Interfaces.Plug
   plug :remove_resp_headers
+
+  ########################
+  # TODO: Move to its own package.
+  # Or implement the URI protocol for Plug.Conn
+  ########################
+
+  # def plug_uri(conn, _opts) do
+  #   # No need to add `authority` as it can be extracted from the other data
+  #   uri = %URI{fragment: term, host: term,
+  #              path: term, port: term, query: term, scheme: term, userinfo: term}
+
+  #   t :: 
+  #   t :: %Plug.Conn{adapter: adapter, assigns: assigns, before_send: before_send, body_params: params | Plug.Conn.Unfetched.t, cookies: cookies | Plug.Conn.Unfetched.t, halted: term, host: host, method: method, owner: owner, params: params | Plug.Conn.Unfetched.t, path_info: segments, peer: peer, port: :inet.port_number, private: assigns, query_params: params | Plug.Conn.Unfetched.t, query_string: query_string, remote_ip: :inet.ip_address, req_cookies: cookies | Plug.Conn.Unfetched.t, req_headers: headers, request_path: binary, resp_body: body, resp_cookies: resp_cookies, resp_headers: headers, scheme: scheme, script_name: segments, secret_key_base: secret_key_base, state: state, status: int_status}
+
+  #   %Plug.Conn{port: 80, scheme: :https,  method: "GET", host: "github.com", request_path: "/davoclavo", assigns: %{id: "code"}, req_headers: [{"accept", "text/html"}], resp_headers: [{"content-type", "text/html; charset=utf8"}], status: 200},
+  #   conn
+  #   |> assign(:uri, uri)
+  # end
+
 
   ########################
   # TODO: Move these to Troxy.Interfaces.
@@ -78,23 +99,20 @@ defmodule Davo.Troxy.Pipeline do
     # require IEx
     # IEx.pry
     Logger.info("Response proxied")
-    Davo.Endpoint.broadcast("users:new", "conn:resp", conn)
+    conn_id = conn.assigns[:id]
+    Davo.Endpoint.broadcast("users:new", "conn:resp" <> conn_id, conn)
     conn
   end
 
-  def resp_body_handler(conn, body_chunk) do
+  def resp_body_handler(conn, body_chunk, more_body) do
     Logger.info("Response body chunk")
-    Davo.Endpoint.broadcast("users:new", "conn:resp_body_chunk", body_chunk)
+    conn_id = conn.assigns[:id]
+    Davo.Endpoint.broadcast("users:new", "conn:resp_body_chunk" <> conn_id, %{body_chunk: body_chunk, more_body: more_body})
     conn
   end
 
   def broadcast_conn(conn) do
     Davo.Endpoint.broadcast("users:new", "conn:req", conn)
-  end
-
-  def broadcast_demo do
-    Davo.Repo.get_demo
-    |> Enum.map(&broadcast_conn/1)
   end
 end
 
