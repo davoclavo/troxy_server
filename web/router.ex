@@ -17,8 +17,8 @@ defmodule Davo.Router do
     |> Plug.Conn.put_resp_header("x-0-------------------", "")
     |> Plug.Conn.put_resp_header("x-1--xx---x--x-x--x---", "")
     |> Plug.Conn.put_resp_header("x-2--x-x-x-x-x-x-x-x--", "")
-    |> Plug.Conn.put_resp_header("x-3--x-x-xxx-x-x-x-x--", "")
-    |> Plug.Conn.put_resp_header("x-4--xx--x-x--x-- x---", ".io")
+    |> Plug.Conn.put_resp_header("x-3--x-x-xxx-x-x-x-x--", ".io")
+    |> Plug.Conn.put_resp_header("x-4--xx--x-x--x---x---", "")
     |> Plug.Conn.put_resp_header("x-5-------------------", "")
   end
 

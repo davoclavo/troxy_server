@@ -26,7 +26,6 @@ defmodule Davo.Troxy.Pipeline do
   #   uri = %URI{fragment: term, host: term,
   #              path: term, port: term, query: term, scheme: term, userinfo: term}
 
-  #   t :: 
   #   t :: %Plug.Conn{adapter: adapter, assigns: assigns, before_send: before_send, body_params: params | Plug.Conn.Unfetched.t, cookies: cookies | Plug.Conn.Unfetched.t, halted: term, host: host, method: method, owner: owner, params: params | Plug.Conn.Unfetched.t, path_info: segments, peer: peer, port: :inet.port_number, private: assigns, query_params: params | Plug.Conn.Unfetched.t, query_string: query_string, remote_ip: :inet.ip_address, req_cookies: cookies | Plug.Conn.Unfetched.t, req_headers: headers, request_path: binary, resp_body: body, resp_cookies: resp_cookies, resp_headers: headers, scheme: scheme, script_name: segments, secret_key_base: secret_key_base, state: state, status: int_status}
 
   #   %Plug.Conn{port: 80, scheme: :https,  method: "GET", host: "github.com", request_path: "/davoclavo", assigns: %{id: "code"}, req_headers: [{"accept", "text/html"}], resp_headers: [{"content-type", "text/html; charset=utf8"}], status: 200},
@@ -50,9 +49,15 @@ defmodule Davo.Troxy.Pipeline do
     host = Application.get_env(:davo, Davo.Endpoint)[:url][:host]
     ip = Application.get_env(:davo, Davo.Endpoint)[:url][:ip]
 
-    [host, ip, "localhost"]
-    |> Enum.any?(&(&1 == conn.host))
+    host_header = Plug.Conn.get_req_header(conn, "host") |> hd
+
+    [host, ip, "localhost:4000"]
+    # This proxies to other ports as well
+    |> Enum.any?(&(&1 == host_header))
+    # This only matches to the the host without port
+    # |> Enum.any?(&(&1 == conn.host))
     |> if do
+         Logger.info("Skip Troxy")
          Plug.Conn.assign(conn, :skip_troxy, true)
        else
          conn
@@ -84,35 +89,36 @@ defmodule Davo.Troxy.Pipeline do
   # Troxy in-module handlers
   ##########################
 
+  @channel_name "users:lobby"
+
   def req_handler(conn) do
     # Is broadcast async?? if not, I think it should
-
     # require IEx
     # IEx.pry
     Logger.info("Request proxied")
-    Davo.Endpoint.broadcast("users:new", "conn:req", conn)
+    Davo.Endpoint.broadcast(@channel_name, "conn:req", conn)
     conn
   end
-
 
   def resp_handler(conn) do
     # require IEx
     # IEx.pry
     Logger.info("Response proxied")
     conn_id = conn.assigns[:id]
-    Davo.Endpoint.broadcast("users:new", "conn:resp" <> conn_id, conn)
+    Davo.Endpoint.broadcast(@channel_name, "conn:resp" <> conn_id, conn)
     conn
   end
 
   def resp_body_handler(conn, body_chunk, more_body) do
     Logger.info("Response body chunk")
     conn_id = conn.assigns[:id]
-    Davo.Endpoint.broadcast("users:new", "conn:resp_body_chunk" <> conn_id, %{body_chunk: body_chunk, more_body: more_body})
+    encoded_body_chunk = Base.encode64(body_chunk)
+    Davo.Endpoint.broadcast(@channel_name, "conn:resp_body_chunk:" <> conn_id, %{body_chunk: encoded_body_chunk, more_body: more_body})
     conn
   end
 
   def broadcast_conn(conn) do
-    Davo.Endpoint.broadcast("users:new", "conn:req", conn)
+    Davo.Endpoint.broadcast(@channel_name, "conn:req", conn)
   end
 end
 
@@ -130,4 +136,3 @@ defimpl Poison.Encoder, for: Plug.Conn do
     |> Poison.encode!
   end
 end
-

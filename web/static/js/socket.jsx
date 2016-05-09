@@ -26,7 +26,7 @@ export let socket = new Socket('/socket', {params: {token: window.userToken}})
 socket.connect()
 
 // Now that you are connected, you can join channels with a topic:
-let channel = socket.channel('users:new', {})
+let channel = socket.channel('users:lobby', {})
 channel.join()
   .receive('ok', resp => { console.log('Joined davo successfully'); })
   .receive('error', resp => { console.log('Unable to join', resp) })
@@ -46,24 +46,48 @@ class Headers extends React.Component {
 }
 
 class Body extends React.Component {
-
+  constructor(props) {
+    super(props)
+    this.state = {
+      render_type: "data"
+    }
+  }
   render() {
-    /* return(
-       <span className='body'>{this.props.body}</span>
-       ) */
-    /* return(
-       <iframe srcDoc={this.props.body}></iframe>
-       ) */
     let element
     if(this.props.more_body){
       element = <div/>
     } else {
-      element = <canvas className="body" ref={(ref) => this.rasterizingCanvas = ref}></canvas>
+      switch(this.state.render_type) {
+        case "canvas":
+          element = <canvas className="body" ref={(ref) => this.rasterizingCanvas = ref}></canvas>
+          break;
+        case "raw":
+          element = <span className='body'>{this.props.body}</span>
+          break;
+        case "iframe":
+          element = <iframe srcDoc={this.props.body}></iframe>
+          break;
+        case "base64":
+          element = <a target="_blank" rel="noopener noreferrer" href={'data:text/html;base64,' + btoa(this.props.body)}>Open content in new tab.</a>
+          break;
+        case "data":
+          element = <a target="_blank" rel="noopener noreferrer" href={'data:text/html;davo.io,' + escape(this.props.body)}>Open body in new tab.</a>
+          break;
+        case "content-type":
+          // TODO based off content-type
+          break;
+        case "switcharoo":
+          // http://lcamtuf.coredump.cx/switch/
+          break;
+        case "none":
+          element = <i>hidden</i>
+          break;
+      }
     }
     return element
   }
   componentDidUpdate() {
-    if(!this.props.more_body){
+    if(!this.props.more_body && this.state.render_type == "canvas"){
       console.dir(rasterizeHTML)
       console.dir(this.rasterizingCanvas)
       rasterizeHTML.drawHTML(this.props.body, this.rasterizingCanvas)
@@ -108,8 +132,10 @@ class Response extends React.Component {
         conn: conn
       })
     })
-    channel.on('conn:resp_body_chunk' + conn_id, data => {
-      let body = this.state.body + data.body_chunk
+    channel.on('conn:resp_body_chunk:' + conn_id, data => {
+      /* console.dir(data.body_chunk) */
+      let decoded_chunk = atob(data.body_chunk)
+      let body = this.state.body + decoded_chunk
       // TODO: Merge, not replace state
       this.setState({body: body, more_body: data.more_body})
     })
@@ -121,8 +147,10 @@ class Response extends React.Component {
       <div className='response'>
         <span className='status'>{this.state.conn.status}</span>
         <Headers className='resp_headers' headers={this.state.conn.resp_headers} />
-        <Body className='resp_body' body={this.state.body} more_body={this.state.more_body}/>
+        <Body className='resp_body' content_type={this.state.conn.resp_headers} body={this.state.body} more_body={this.state.more_body}/>
         {/* TODO: Timing */}
+        {/* TODO: SSL */}
+        {/* TODO: Settings(follow_redirects?) */}
       </div>
     )
   }

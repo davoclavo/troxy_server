@@ -3,7 +3,7 @@
 // let socket = new Socket("/socket")
 // socket.connect()
 
-// let channel = socket.channel("users:new", {})
+// let channel = socket.channel("users:lobby", {})
 // channel.join().receive("ok", chan => {
 //     console.log("joined")
 // })
