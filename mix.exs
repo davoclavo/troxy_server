@@ -39,8 +39,8 @@ defmodule Davo.Mixfile do
      {:phoenix_live_reload, github: "phoenixframework/phoenix_live_reload", only: :dev},
      {:gettext, "~> 0.9"},
      {:cowboy, "~> 1.0"},
-     # {:troxy, path: "../troxy" },
-     {:troxy, git: "https://gitlab.com/davoclavo/troxy.git" },
+     {:troxy, path: "../troxy" },
+     # {:troxy, git: "https://gitlab.com/davoclavo/troxy.git" },
      {:plug_ribbon, "~> 0.2.0"}
     ]
   end

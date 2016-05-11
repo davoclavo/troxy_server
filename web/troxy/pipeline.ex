@@ -46,16 +46,12 @@ defmodule Davo.Troxy.Pipeline do
 
   def skip_self_requests(conn, _opts) do
     # TODO: Use URI.parse for the port and subdomains
-    host = Application.get_env(:davo, Davo.Endpoint)[:url][:host]
-    ip = Application.get_env(:davo, Davo.Endpoint)[:url][:ip]
-
-    host_header = Plug.Conn.get_req_header(conn, "host") |> hd
-
-    [host, ip, "localhost:4000"]
+    loopback_hosts
     # This proxies to other ports as well
-    |> Enum.any?(&(&1 == host_header))
+    # host_header = Plug.Conn.get_req_header(conn, "host") |> hd
+    # |> Enum.any?(&(&1 == host_header))
     # This only matches to the the host without port
-    # |> Enum.any?(&(&1 == conn.host))
+    |> Enum.any?(&(&1 == conn.host))
     |> if do
          Logger.info("Skip Troxy")
          Plug.Conn.assign(conn, :skip_troxy, true)
@@ -64,6 +60,35 @@ defmodule Davo.Troxy.Pipeline do
        end
   end
 
+  def loopback_hosts do
+    get_local_ips
+    |> Enum.concat(get_public_hosts)
+    |> Enum.concat(["localhost"])
+  end
+
+  def get_local_ips do
+    {:ok, local_ips} = :inet.getif
+    local_ips
+    |> Enum.map(fn ip_record ->
+      # Example: {{192, 168, 99, 1}, {192, 168, 99, 255}, {255, 255, 255, 0}}
+      ip_record
+      |> Tuple.to_list
+      |> hd
+      |> Tuple.to_list
+      |> Enum.join(".")
+    end)
+  end
+
+  def get_public_ip do
+    Application.get_env(:davo, Davo.Endpoint)[:url][:ip]
+  end
+
+  def get_public_hosts do
+    [Application.get_env(:davo, Davo.Endpoint)[:url][:host]]
+
+    # TODO: Parse the hosts
+    # {output, 0} = System.cmd("nslookup", [get_public_ip])
+  end
 
   def remove_req_headers(conn, _opts) do
     conn

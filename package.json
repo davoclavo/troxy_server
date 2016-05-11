@@ -32,8 +32,10 @@
     "react-dom": "^0.14.0",
     "phoenix": "file:deps/phoenix",
     "phoenix_html": "file:deps/phoenix_html",
-      "bootstrap-sass": "^3.3.6",
-      "rasterizehtml": "^1.2.2"
+    "bootstrap-sass": "^3.3.6",
+    "rasterizehtml": "^1.2.2",
+      "react-ace": "",
+      "react-radio": "^2.1.1"
   },
   "scripts": {
     "start": "webpack --watch-stdin --colors",

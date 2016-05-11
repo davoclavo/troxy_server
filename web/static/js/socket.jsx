@@ -5,6 +5,8 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import classNames from 'classnames'
 import moment from 'moment'
 import rasterizeHTML from 'rasterizehtml'
+import RadioGroup from 'react-radio'
+
 
 /* require('css/app') */
 
@@ -45,12 +47,14 @@ class Headers extends React.Component {
   }
 }
 
+
 class Body extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
       render_type: "data"
     }
+    this.handleRenderType = this.handleRenderType.bind(this)
   }
   render() {
     let element
@@ -58,41 +62,54 @@ class Body extends React.Component {
       element = <div/>
     } else {
       switch(this.state.render_type) {
-        case "canvas":
-          element = <canvas className="body" ref={(ref) => this.rasterizingCanvas = ref}></canvas>
-          break;
+        case "auto":
+        if(this.props.content_type == "image/gif"){
+          element = <img src={escape(this.props.body)}/>
+        }
+            // TODO based off content-type
+            break;
         case "raw":
           element = <span className='body'>{this.props.body}</span>
           break;
         case "iframe":
           element = <iframe srcDoc={this.props.body}></iframe>
           break;
-        case "base64":
-          element = <a target="_blank" rel="noopener noreferrer" href={'data:text/html;base64,' + btoa(this.props.body)}>Open content in new tab.</a>
-          break;
         case "data":
-          element = <a target="_blank" rel="noopener noreferrer" href={'data:text/html;davo.io,' + escape(this.props.body)}>Open body in new tab.</a>
+          const content_type = this.props.content_type.split(";")[0]
+          element = <a target="_blank" rel="noopener noreferrer" href={'data:' + content_type + ';davo.io,' + escape(this.props.body)}>Open body in new tab.</a>
           break;
-        case "content-type":
-          // TODO based off content-type
+        case "canvas":
+          element = <canvas className="body" ref={(ref) => this.rasterizingCanvas = ref}></canvas>
           break;
         case "switcharoo":
           // http://lcamtuf.coredump.cx/switch/
           break;
-        case "none":
-          element = <i>hidden</i>
-          break;
       }
     }
-    return element
+    const classes = classNames({
+      'hidden': this.state.more_body
+    })
+    return (
+      <div className={classes}>
+        <RadioGroup name={this._reactInternalInstance._rootNodeID} value={this.state.render_type} items={this.props.render_types} onChange={this.handleRenderType} />
+        {element}
+      </div>
+    );
+  }
+  handleRenderType(render_type) {
+    this.setState({render_type});
   }
   componentDidUpdate() {
     if(!this.props.more_body && this.state.render_type == "canvas"){
-      console.dir(rasterizeHTML)
-      console.dir(this.rasterizingCanvas)
       rasterizeHTML.drawHTML(this.props.body, this.rasterizingCanvas)
     }
   }
+}
+Body.defaultProps = {
+  content_type: 'text/html',
+  render_types: [
+    'auto', 'raw', 'iframe', 'canvas', 'data'
+  ]
 }
 
 class Request extends React.Component {
@@ -137,6 +154,9 @@ class Response extends React.Component {
       let decoded_chunk = atob(data.body_chunk)
       let body = this.state.body + decoded_chunk
       // TODO: Merge, not replace state
+      if(!data.more_body) {
+        console.log(body)
+      }
       this.setState({body: body, more_body: data.more_body})
     })
 
@@ -147,7 +167,7 @@ class Response extends React.Component {
       <div className='response'>
         <span className='status'>{this.state.conn.status}</span>
         <Headers className='resp_headers' headers={this.state.conn.resp_headers} />
-        <Body className='resp_body' content_type={this.state.conn.resp_headers} body={this.state.body} more_body={this.state.more_body}/>
+        <Body className='resp_body' content_type={this.state.conn.resp_headers['content-type']} body={this.state.body} more_body={this.state.more_body}/>
         {/* TODO: Timing */}
         {/* TODO: SSL */}
         {/* TODO: Settings(follow_redirects?) */}
@@ -157,16 +177,17 @@ class Response extends React.Component {
 }
 
 class ConnRow extends React.Component {
-  static defaultProps() {
-    return {
+  constructor(props) {
+    super(props)
+    this.state = {
+      collapsed: true,
       selected: false,
-      focused: false
     }
   }
   render() {
-    let classes = classNames({
-      'is-selected': this.props.selected,
-      'is-focused': this.props.focused,
+    const classes = classNames({
+      'is-collapsed': this.state.collapsed,
+      'is-selected': this.state.selected,
       'conn': true
     })
     return(
@@ -194,7 +215,6 @@ class ConnTable extends React.Component {
   }
   componentDidMount() {
     channel.on('conn:req', conn => {
-      console.dir(conn)
       // Should  only have one key
       let conns = this.state.conns
       conns.push(conn)
@@ -203,7 +223,7 @@ class ConnTable extends React.Component {
     })
   }
   onKeyDown(event) {
-    console.log(e)
+    console.log(event)
   }
   render() {
     const rowNodes = this.state.conns.map(conn => {
