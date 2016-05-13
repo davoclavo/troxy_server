@@ -5,39 +5,86 @@
 $icon-font-path: "~bootstrap-sass/assets/fonts/bootstrap/";
 @import "bootstrap-sass/assets/stylesheets/bootstrap.scss";
 
+$background-color: #E6E2E2;
+
+html {
+  box-sizing: border-box;
+  font-family: monospace;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
 .container-fluid {
   padding: 0;
 }
 
 #conns {
-}
+  .sidebar {
+    width: 20%;
+    display: inline-block;
+    vertical-align: top;
 
-.conn {
-  font-family: monospace;
+    ol {
+      padding: 0px;
+      list-style: none;
+      cursor: pointer;
 
-  .host {
+      li {
+        padding: 10px;
+        transition: 0.2s all;
+        background: $background-color;
 
-  }
+        &:hover {
+          background: darken($background-color, 10%);
+        }
 
-  .path {
+        &.is-selected {
+          background: darken($background-color, 50%);
+          color: white;
+        }
 
-  }
+        .method, .status {
+          font-weight: bold;
+          margin-right: 0.5rem;
+        }
 
-  .headers {
-    list-style-type: none;
-    padding-left: 0;
-  }
-
-  .request {
-    .method {
-      font-weight: bold;
-      margin-right: 1em;
+      }
     }
   }
 
-  .response {
-    .status {
-      font-weight: bold;
+  .details {
+    width: 80%;
+    display: inline-block;
+    vertical-align: top;
+    padding: 10px 20px;
+    background: #E6E2E2;
+
+    .headers {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .body {
+      .render_type {
+        input {
+          display: none;
+        }
+      }
+    }
+
+    .request {
+      .method {
+        font-weight: bold;
+        margin-right: 1em;
+      }
+    }
+
+    .response {
+      .status {
+        font-weight: bold;
+      }
     }
   }
 }

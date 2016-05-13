@@ -1,16 +1,22 @@
-import {Socket} from 'phoenix'
-import React from 'react'
-import ReactDOM from 'react-dom'
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
-import classNames from 'classnames'
-import moment from 'moment'
-import rasterizeHTML from 'rasterizehtml'
-import RadioGroup from 'react-radio'
+import {Socket} from 'phoenix';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import classNames from 'classnames';
+import moment from 'moment';
+import rasterizeHTML from 'rasterizehtml';
+import RadioGroup from 'react-radio';
+import AceEditor from 'react-ace';
+
+import brace from 'brace';
+import 'brace/mode/html';
+import 'brace/theme/github';
+import 'brace/theme/monokai';
 
 
 /* require('css/app') */
 
-export let socket = new Socket('/socket', {params: {token: window.userToken}})
+export let socket = new Socket('/socket', {params: {token: window.userToken}});
 
 // When you connect, you'll often need to authenticate the client.
 // For example, imagine you have an authentication plug, `MyAuth`,
@@ -25,13 +31,13 @@ export let socket = new Socket('/socket', {params: {token: window.userToken}})
 // Or remove it
 // from connect if you don't care about authentication.
 
-socket.connect()
+socket.connect();
 
 // Now that you are connected, you can join channels with a topic:
-let channel = socket.channel('users:lobby', {})
+let channel = socket.channel('users:lobby', {});
 channel.join()
   .receive('ok', resp => { console.log('Joined davo successfully'); })
-  .receive('error', resp => { console.log('Unable to join', resp) })
+  .receive('error', resp => { console.log('Unable to join', resp); });
 
 class Headers extends React.Component {
   render() {
@@ -40,7 +46,7 @@ class Headers extends React.Component {
         {Object.keys(this.props.headers).map((name, index) => {
            return (
              <li key={index}>{name}: {this.props.headers[name]}</li>
-           )
+           );
          })}
       </ol>
     )
@@ -50,71 +56,90 @@ class Headers extends React.Component {
 
 class Body extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
-      render_type: "data"
-    }
-    this.handleRenderType = this.handleRenderType.bind(this)
+      render_type: "auto"
+    };
+    this.handleRenderType = this.handleRenderType.bind(this);
   }
   render() {
-    let element
+    let element;
+    console.log(this.props.content_type);
     if(this.props.more_body){
-      element = <div/>
+      element = <div/>;
     } else {
+      const content_type = this.props.content_type;
       switch(this.state.render_type) {
         case "auto":
-        if(this.props.content_type == "image/gif"){
-          element = <img src={escape(this.props.body)}/>
-        }
-            // TODO based off content-type
+            if(content_type == "image/gif"){
+              const data = 'data:'+content_type+';base64,'+btoa(this.props.body);
+              element = <img src={data}/>;
+            }
             break;
         case "raw":
-          element = <span className='body'>{this.props.body}</span>
+          element = <span className='body'>{this.props.body}</span>;
+          break;
+        case "editor":
+        element =  <AceEditor width="100%" mode="html" theme="monokai" name={this._reactInternalInstance._rootNodeID} value={this.props.body} />;
           break;
         case "iframe":
-          element = <iframe srcDoc={this.props.body}></iframe>
+          element = <iframe srcDoc={this.props.body}></iframe>;
           break;
+      case "shadowdom":
+        element = <div ref="shadow"/>;
+        break;
         case "data":
-          const content_type = this.props.content_type.split(";")[0]
-          element = <a target="_blank" rel="noopener noreferrer" href={'data:' + content_type + ';davo.io,' + escape(this.props.body)}>Open body in new tab.</a>
+          const content_type = this.props.content_type.split(";")[0];
+          element = <a target="_blank" rel="noopener noreferrer" href={'data:' + content_type + ';davo.io,' + escape(this.props.body)}>Open body in new tab.</a>;
           break;
         case "canvas":
-          element = <canvas className="body" ref={(ref) => this.rasterizingCanvas = ref}></canvas>
+          element = <canvas className="body" ref={(ref) => this.rasterizingCanvas = ref}></canvas>;
           break;
         case "switcharoo":
           // http://lcamtuf.coredump.cx/switch/
           break;
       }
     }
-    const classes = classNames({
-      'hidden': this.state.more_body
-    })
     return (
-      <div className={classes}>
-        <RadioGroup name={this._reactInternalInstance._rootNodeID} value={this.state.render_type} items={this.props.render_types} onChange={this.handleRenderType} />
+      <div className="body">
+        <div className="btn-group-sm">
+            <RadioGroup className="render_type" name={this._reactInternalInstance._rootNodeID} value={this.state.render_type} items={this.props.render_types} onChange={this.handleRenderType} renderRadio={this.renderRadio} />
+        </div>
+
         {element}
       </div>
     );
   }
+  renderRadio(props, index, arr) {
+    return (
+      <label className="btn btn-default" {...props} />
+    );
+  }
   handleRenderType(render_type) {
+    console.log(render_type);
     this.setState({render_type});
   }
   componentDidUpdate() {
     if(!this.props.more_body && this.state.render_type == "canvas"){
-      rasterizeHTML.drawHTML(this.props.body, this.rasterizingCanvas)
+      rasterizeHTML.drawHTML(this.props.body, this.rasterizingCanvas);
+    }
+    if(!this.props.more_body && this.state.render_type == "shadowdom"){
+      console.dir(this.refs.shadow);
+      this.refs.shadow.createShadowRoot();
+      this.refs.shadow.innerHTML = this.props.body;
     }
   }
 }
 Body.defaultProps = {
   content_type: 'text/html',
   render_types: [
-    'auto', 'raw', 'iframe', 'canvas', 'data'
+    'auto', 'editor', 'raw', 'iframe', 'canvas', 'data', 'shadowdom'
   ]
-}
+};
 
 class Request extends React.Component {
   render() {
-    const conn = this.props.conn
+    const conn = this.props.conn;
     return(
       <div className='request'>
         <span className='method'>{conn.method}</span>
@@ -125,132 +150,143 @@ class Request extends React.Component {
         <span className='query_string'>{conn.query_string}</span>
         <Headers className='req_headers' headers={conn.req_headers} />
       </div>
-    )
+    );
   }
 }
 
 class Response extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      body: '',
-      more_body: true,
-      render: 'rasterizehtml',
-      conn: {
-        status: '',
-        resp_headers: {}
-      }
-    }
-  }
-  componentDidMount() {
-    const conn_id = this.props.conn.assigns.id
-    channel.on('conn:resp' + conn_id, conn => {
-      this.setState({
-        conn: conn
-      })
-    })
-    channel.on('conn:resp_body_chunk:' + conn_id, data => {
-      /* console.dir(data.body_chunk) */
-      let decoded_chunk = atob(data.body_chunk)
-      let body = this.state.body + decoded_chunk
-      // TODO: Merge, not replace state
-      if(!data.more_body) {
-        console.log(body)
-      }
-      this.setState({body: body, more_body: data.more_body})
-    })
-
-  }
   render() {
-    const conn = this.props.conn
+    const conn = this.props.conn;
     return(
       <div className='response'>
-        <span className='status'>{this.state.conn.status}</span>
-        <Headers className='resp_headers' headers={this.state.conn.resp_headers} />
-        <Body className='resp_body' content_type={this.state.conn.resp_headers['content-type']} body={this.state.body} more_body={this.state.more_body}/>
+        <span className='status'>{this.props.conn.status}</span>
+        <Headers className='resp_headers' headers={this.props.conn.resp_headers} />
+        <Body className='resp_body' content_type={this.props.conn.resp_headers['content-type']} body={this.props.conn.resp_body} more_body={this.props.more_body}/>
         {/* TODO: Timing */}
         {/* TODO: SSL */}
         {/* TODO: Settings(follow_redirects?) */}
       </div>
-    )
+    );
   }
 }
+Response.defaultProps = {
+  render: 'editor'
+};
 
-class ConnRow extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      collapsed: true,
-      selected: false,
-    }
-  }
-  render() {
-    const classes = classNames({
-      'is-collapsed': this.state.collapsed,
-      'is-selected': this.state.selected,
-      'conn': true
-    })
-    return(
-      <tr className={classes}>
-        <td>
-          {this.props.conn.assigns.id}
-        </td>
-        <td>
-          <Request conn={this.props.conn} />
-        </td>
-        <td>
-          <Response conn={this.props.conn} />
-        </td>
-      </tr>
-    )
-  }
-}
 
-class ConnTable extends React.Component {
+class ConnView extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
-      conns: []
-    }
+      conns: {},
+      ui: {
+        selectedConn: null
+      }
+    };
+    this.clickHandler = (conn_id) => (e) => this.click(conn_id, e);
+  }
+  click(conn_id, e) {
+    console.log(conn_id, this.state, e);
+    this.setState({
+      ui: {
+        selectedConn: conn_id
+      }
+    });
   }
   componentDidMount() {
+    console.log("mount");
     channel.on('conn:req', conn => {
-      // Should  only have one key
-      let conns = this.state.conns
-      conns.push(conn)
+      let conns = this.state.conns;
+      const conn_id = conn.assigns.id;
+      conns[conn_id] = conn;
+      this.setState({ conns });
 
-      this.setState({conns: conns})
-    })
-  }
-  onKeyDown(event) {
-    console.log(event)
+      channel.on('conn:resp:' + conn_id, conn => {
+      console.dir(conn);
+        let updated_conns = Object.assign({}, this.state.conns, {
+          [conn_id]: Object.assign({}, this.state.conns[conn_id], conn)
+        });
+
+        this.setState({
+          conns: updated_conns
+        });
+      });
+      channel.on('conn:resp_body_chunk:' + conn_id, data => {
+        const conn = this.state.conns[conn_id];
+        const decoded_chunk = atob(data.body_chunk);
+        let updated_conns = Object.assign({}, this.state.conns, {
+          [conn_id]: Object.assign({}, conn, {
+            resp_body: (conn.resp_body || "") + decoded_chunk,
+            more_body: data.more_body
+          })
+        });
+        this.setState({
+          conns: updated_conns
+        });
+      });
+    });
   }
   render() {
-    const rowNodes = this.state.conns.map(conn => {
-      return(<ConnRow conn={conn} key={conn.assigns.id}/>)
-    })
+    const conns = this.state.conns;
     return (
-      <div className="table-responsive" onKeyDown={this.onKeyDown}>
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Request</th>
-              <th>Response</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rowNodes}
-          </tbody>
-        </table>
+      <div>
+        <ConnSidebar conns={conns} clickHandler={this.clickHandler} selectedConn={this.state.ui.selectedConn} />
+        <div className='details'>
+            <ConnDetails conn={this.state.conns[this.state.ui.selectedConn]} />
+        </div>
       </div>
-    )
+    );
+  }
+}
+
+class ConnSidebar extends React.Component {
+  render() {
+    const conns = this.props.conns;
+    const rowNodes = Object.keys(conns).map(conn_id => {
+      return <ConnSummary conn={conns[conn_id]} key={conn_id} selected={conn_id === this.props.selectedConn} clickHandler={this.props.clickHandler} />;
+    });
+    return(
+      <div className='sidebar'>
+        <ol>
+          {rowNodes}
+        </ol>
+      </div>
+    );
+  }
+}
+
+class ConnDetails extends React.Component {
+  render() {
+    const conn = this.props.conn;
+    if(conn == null) {
+      return <marquee><blink>set your proxy to localhost:4000</blink></marquee>;
+    } else {
+      return <Response conn={this.props.conn} />;
+    }
+  }
+}
+
+class ConnSummary extends React.Component {
+  render() {
+    const classes = classNames({
+      'is-selected': this.props.selected,
+      'conn': true
+    });
+    return(
+      <li className={classes} onClick={this.props.clickHandler(this.props.conn.assigns.id)}>
+        <span className='method'>{this.props.conn.method}</span>
+        <span className='path'>{this.props.conn.request_path}</span>
+        <br/>
+        <span className='status'>{this.props.conn.status}</span>
+        <span>{this.props.conn.resp_headers['content-type']}</span>
+      </li>
+    );
   }
 }
 
 ReactDOM.render(
-  <ConnTable />,
+  <ConnView />,
   document.getElementById('conns')
-)
+);
 
-export default socket
+export default socket;

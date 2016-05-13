@@ -35,7 +35,8 @@
     "bootstrap-sass": "^3.3.6",
     "rasterizehtml": "^1.2.2",
       "react-ace": "",
-      "react-radio": "^2.1.1"
+      "react-radio": "^2.1.1",
+      "brace": "^0.8.0"
   },
   "scripts": {
     "start": "webpack --watch-stdin --colors",

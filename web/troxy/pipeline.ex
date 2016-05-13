@@ -130,14 +130,16 @@ defmodule Davo.Troxy.Pipeline do
     # IEx.pry
     Logger.info("Response proxied")
     conn_id = conn.assigns[:id]
-    Davo.Endpoint.broadcast(@channel_name, "conn:resp" <> conn_id, conn)
+    Davo.Endpoint.broadcast(@channel_name, "conn:resp:" <> conn_id, conn)
     conn
   end
 
   def resp_body_handler(conn, body_chunk, more_body) do
     Logger.info("Response body chunk")
     conn_id = conn.assigns[:id]
+    # replaced_chunk = String.replace(body_chunk, "davoclavo", "carletex")
     encoded_body_chunk = Base.encode64(body_chunk)
+
     Davo.Endpoint.broadcast(@channel_name, "conn:resp_body_chunk:" <> conn_id, %{body_chunk: encoded_body_chunk, more_body: more_body})
     conn
   end
@@ -151,6 +153,7 @@ defimpl Poison.Encoder, for: Plug.Conn do
   def encode(conn, options) do
     # peer = conn.peer
 
+    # TODO: Treat proplists as arrays to preserve order
     # kwlists to maps to be able to JSON encodify easily
     req_headers = Enum.into(conn.req_headers, %{})
     resp_headers = Enum.into(conn.resp_headers, %{})
