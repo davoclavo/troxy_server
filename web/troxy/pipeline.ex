@@ -125,6 +125,16 @@ defmodule Davo.Troxy.Pipeline do
     conn
   end
 
+  def req_body_handler(conn, body_chunk, more_body) do
+    Logger.info("Request body chunk")
+    conn_id = conn.assigns[:id]
+    # replaced_chunk = String.replace(body_chunk, "davoclavo", "carletex")
+    encoded_body_chunk = Base.encode64(body_chunk)
+
+    Davo.Endpoint.broadcast(@channel_name, "conn:req_body_chunk:" <> conn_id, %{body_chunk: encoded_body_chunk, more_body: more_body})
+    conn
+  end
+
   def resp_handler(conn) do
     # require IEx
     # IEx.pry

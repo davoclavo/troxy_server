@@ -25,31 +25,28 @@ html {
     width: 20%;
     display: inline-block;
     vertical-align: top;
+    overflow: auto;
+    max-height: 100vh;
 
-    ol {
-      padding: 0px;
-      list-style: none;
+    .conn {
       cursor: pointer;
 
-      li {
-        padding: 10px;
-        transition: 0.2s all;
-        background: $background-color;
+      padding: 10px;
+      transition: 0.1s all;
+      background: $background-color;
 
-        &:hover {
-          background: darken($background-color, 10%);
-        }
+      &:hover {
+        background: darken($background-color, 10%);
+      }
 
-        &.is-selected {
-          background: darken($background-color, 50%);
-          color: white;
-        }
+      &.is-selected {
+        background: darken($background-color, 50%);
+        color: white;
+      }
 
-        .method, .status {
-          font-weight: bold;
-          margin-right: 0.5rem;
-        }
-
+      .method, .status {
+        font-weight: bold;
+        margin-right: 0.5rem;
       }
     }
   }

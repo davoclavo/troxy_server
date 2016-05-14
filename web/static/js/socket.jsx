@@ -2,17 +2,19 @@ import {Socket} from 'phoenix';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import ReactList from 'react-list';
+
 import classNames from 'classnames';
 import moment from 'moment';
 import rasterizeHTML from 'rasterizehtml';
 import RadioGroup from 'react-radio';
 import AceEditor from 'react-ace';
 
+
 import brace from 'brace';
 import 'brace/mode/html';
 import 'brace/theme/github';
 import 'brace/theme/monokai';
-
 
 /* require('css/app') */
 
@@ -49,7 +51,7 @@ class Headers extends React.Component {
            );
          })}
       </ol>
-    )
+    );
   }
 }
 
@@ -64,7 +66,6 @@ class Body extends React.Component {
   }
   render() {
     let element;
-    console.log(this.props.content_type);
     if(this.props.more_body){
       element = <div/>;
     } else {
@@ -116,7 +117,6 @@ class Body extends React.Component {
     );
   }
   handleRenderType(render_type) {
-    console.log(render_type);
     this.setState({render_type});
   }
   componentDidUpdate() {
@@ -124,7 +124,6 @@ class Body extends React.Component {
       rasterizeHTML.drawHTML(this.props.body, this.rasterizingCanvas);
     }
     if(!this.props.more_body && this.state.render_type == "shadowdom"){
-      console.dir(this.refs.shadow);
       this.refs.shadow.createShadowRoot();
       this.refs.shadow.innerHTML = this.props.body;
     }
@@ -149,6 +148,7 @@ class Request extends React.Component {
 
         <span className='query_string'>{conn.query_string}</span>
         <Headers className='req_headers' headers={conn.req_headers} />
+        <Body className='req_body' content_type={this.props.conn.req_headers['content-type']} body={this.props.conn.req_body} more_body={this.props.more_body}/>
       </div>
     );
   }
@@ -186,7 +186,6 @@ class ConnView extends React.Component {
     this.clickHandler = (conn_id) => (e) => this.click(conn_id, e);
   }
   click(conn_id, e) {
-    console.log(conn_id, this.state, e);
     this.setState({
       ui: {
         selectedConn: conn_id
@@ -194,15 +193,26 @@ class ConnView extends React.Component {
     });
   }
   componentDidMount() {
-    console.log("mount");
     channel.on('conn:req', conn => {
       let conns = this.state.conns;
       const conn_id = conn.assigns.id;
       conns[conn_id] = conn;
       this.setState({ conns });
 
+      channel.on('conn:req_body_chunk:' + conn_id, data => {
+        const conn = this.state.conns[conn_id];
+        const decoded_chunk = atob(data.body_chunk);
+        let updated_conns = Object.assign({}, this.state.conns, {
+          [conn_id]: Object.assign({}, conn, {
+            req_body: (conn.req_body || "") + decoded_chunk,
+            more_body: data.more_body
+          })
+        });
+        this.setState({
+          conns: updated_conns
+        });
+      });
       channel.on('conn:resp:' + conn_id, conn => {
-      console.dir(conn);
         let updated_conns = Object.assign({}, this.state.conns, {
           [conn_id]: Object.assign({}, this.state.conns[conn_id], conn)
         });
@@ -240,16 +250,25 @@ class ConnView extends React.Component {
 }
 
 class ConnSidebar extends React.Component {
+  constructor(props) {
+    super(props);
+    this.renderItem = this.renderItem.bind(this);
+  }
+  renderItem(index, key) {
+    const conn_id = Object.keys(this.props.conns)[index];
+    const conn = this.props.conns[conn_id];
+    return <ConnSummary conn={conn} key={key} selected={conn_id === this.props.selectedConn} clickHandler={this.props.clickHandler} />;
+  }
   render() {
     const conns = this.props.conns;
-    const rowNodes = Object.keys(conns).map(conn_id => {
-      return <ConnSummary conn={conns[conn_id]} key={conn_id} selected={conn_id === this.props.selectedConn} clickHandler={this.props.clickHandler} />;
-    });
     return(
       <div className='sidebar'>
-        <ol>
-          {rowNodes}
-        </ol>
+        <ReactList
+              itemRenderer={this.renderItem}
+              length={Object.keys(this.props.conns).length}
+              type='uniform'
+              updateWhenThisValueChanges={this.props.selectedConn}
+            />
       </div>
     );
   }
@@ -261,7 +280,12 @@ class ConnDetails extends React.Component {
     if(conn == null) {
       return <marquee><blink>set your proxy to localhost:4000</blink></marquee>;
     } else {
-      return <Response conn={this.props.conn} />;
+      return (
+        <div>
+          <Request conn={this.props.conn} />
+          <Response conn={this.props.conn} />
+        </div>
+      );
     }
   }
 }
@@ -273,13 +297,13 @@ class ConnSummary extends React.Component {
       'conn': true
     });
     return(
-      <li className={classes} onClick={this.props.clickHandler(this.props.conn.assigns.id)}>
+      <div className={classes} onClick={this.props.clickHandler(this.props.conn.assigns.id)}>
         <span className='method'>{this.props.conn.method}</span>
         <span className='path'>{this.props.conn.request_path}</span>
         <br/>
         <span className='status'>{this.props.conn.status}</span>
         <span>{this.props.conn.resp_headers['content-type']}</span>
-      </li>
+      </div>
     );
   }
 }
