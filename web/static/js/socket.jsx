@@ -41,6 +41,7 @@ channel.join()
   .receive('ok', resp => { console.log('Joined davo successfully'); })
   .receive('error', resp => { console.log('Unable to join', resp); });
 
+// TODO: Maybe this could be a function component
 class Headers extends React.Component {
   render() {
     return(
@@ -202,6 +203,7 @@ class ConnView extends React.Component {
       channel.on('conn:req_body_chunk:' + conn_id, data => {
         const conn = this.state.conns[conn_id];
         const decoded_chunk = atob(data.body_chunk);
+
         let updated_conns = Object.assign({}, this.state.conns, {
           [conn_id]: Object.assign({}, conn, {
             req_body: (conn.req_body || "") + decoded_chunk,
@@ -230,6 +232,7 @@ class ConnView extends React.Component {
             more_body: data.more_body
           })
         });
+
         this.setState({
           conns: updated_conns
         });
@@ -240,10 +243,9 @@ class ConnView extends React.Component {
     const conns = this.state.conns;
     return (
       <div>
-        <ConnSidebar conns={conns} clickHandler={this.clickHandler} selectedConn={this.state.ui.selectedConn} />
-        <div className='details'>
-            <ConnDetails conn={this.state.conns[this.state.ui.selectedConn]} />
-        </div>
+        {/* `lastChange` is a hack to render the ReactList on every change, it seems it doesnt detect deep changes in objects, such as `more_body` in conns */}
+        <ConnSidebar conns={conns} clickHandler={this.clickHandler} selectedConn={this.state.ui.selectedConn} lastChange={new Date()}/>
+        <ConnDetails conn={conns[this.state.ui.selectedConn]} />
       </div>
     );
   }
@@ -281,7 +283,7 @@ class ConnDetails extends React.Component {
       return <marquee><blink>set your proxy to localhost:4000</blink></marquee>;
     } else {
       return (
-        <div>
+        <div className='details'>
           <Request conn={this.props.conn} />
           <Response conn={this.props.conn} />
         </div>
@@ -291,6 +293,41 @@ class ConnDetails extends React.Component {
 }
 
 class ConnSummary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.resendConn = this.resendConn.bind(this);
+  }
+  resendConn() {
+    console.warn("Request! " + this.props.conn.request_path);
+    const conn = this.props.conn;
+    let xhr = new XMLHttpRequest();
+    // Send request to window.location.origin and add x-troxy-host header
+    let uri = new URL(window.location.origin);
+    
+    // TODO: Support this notation i.imgur.com.davo.io
+    /* uri.host = conn.host + "." + uri.host; */
+
+    let target_uri = Object.assign(uri,
+      {
+        pathname: conn.request_path,
+        /* hash: "",
+           host: window.location.host,
+           origin: "http://stackoverflow.com",
+           password: "",
+           port: "",
+           protocol: "http:",
+           search: "",
+           username: "" */
+      });
+
+    // TODO: Write a host rewrite for Troxy
+    xhr.open('GET', target_uri.href, true);
+    xhr.setRequestHeader("X-Troxy-Host", conn.host);
+    xhr.setRequestHeader("Cache-Control", "no-cache");
+    xhr.setRequestHeader("Pragma", "no-cache");
+
+    xhr.send();
+  }
   render() {
     const classes = classNames({
       'is-selected': this.props.selected,
@@ -300,6 +337,7 @@ class ConnSummary extends React.Component {
       <div className={classes} onClick={this.props.clickHandler(this.props.conn.assigns.id)}>
         <span className='method'>{this.props.conn.method}</span>
         <span className='path'>{this.props.conn.request_path}</span>
+        <a className='action--resend' onClick={this.resendConn}><span className='glyphicon glyphicon-repeat'></span></a>
         <br/>
         <span className='status'>{this.props.conn.status}</span>
         <span>{this.props.conn.resp_headers['content-type']}</span>

@@ -1,5 +1,16 @@
+defmodule Davo.CORS do
+  use Corsica.Router,
+    max_age: 600,
+    allow_credentials: true,
+    allow_headers: ~w(x-troxy-host),
+    origins: "*"
+
+  resource "/*"
+end
+
 defmodule Davo.Endpoint do
   use Phoenix.Endpoint, otp_app: :davo
+  plug Davo.CORS
   plug Davo.Troxy.Pipeline
 
   socket "/socket", Davo.UserSocket

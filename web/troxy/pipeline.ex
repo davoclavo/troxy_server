@@ -2,7 +2,10 @@ defmodule Davo.Troxy.Pipeline do
   require Logger
   use Plug.Builder
 
-  plug :skip_self_requests # And let the normal phoenix router handle the conn
+  # plug :rewrite_composed_host
+  plug :rewrite_troxy_host_header
+  plug :skip_self_peer # And let the normal phoenix router handle the conn
+  # plug :skip_self_hosts
   # plug :cookies # Support upstream cookies
   # plug :inject_js # inject custom js
   # plug :disable_js # disable js scripts
@@ -26,8 +29,6 @@ defmodule Davo.Troxy.Pipeline do
   #   uri = %URI{fragment: term, host: term,
   #              path: term, port: term, query: term, scheme: term, userinfo: term}
 
-  #   t :: %Plug.Conn{adapter: adapter, assigns: assigns, before_send: before_send, body_params: params | Plug.Conn.Unfetched.t, cookies: cookies | Plug.Conn.Unfetched.t, halted: term, host: host, method: method, owner: owner, params: params | Plug.Conn.Unfetched.t, path_info: segments, peer: peer, port: :inet.port_number, private: assigns, query_params: params | Plug.Conn.Unfetched.t, query_string: query_string, remote_ip: :inet.ip_address, req_cookies: cookies | Plug.Conn.Unfetched.t, req_headers: headers, request_path: binary, resp_body: body, resp_cookies: resp_cookies, resp_headers: headers, scheme: scheme, script_name: segments, secret_key_base: secret_key_base, state: state, status: int_status}
-
   #   %Plug.Conn{port: 80, scheme: :https,  method: "GET", host: "github.com", request_path: "/davoclavo", assigns: %{id: "code"}, req_headers: [{"accept", "text/html"}], resp_headers: [{"content-type", "text/html; charset=utf8"}], status: 200},
   #   conn
   #   |> assign(:uri, uri)
@@ -44,7 +45,49 @@ defmodule Davo.Troxy.Pipeline do
     Plug.Conn.assign(conn, :id, conn_id)
   end
 
-  def skip_self_requests(conn, _opts) do
+  def rewrite_troxy_host_header(conn, _opts) do
+    case get_req_header(conn, "x-troxy-host") do
+      [] ->
+        conn
+      [target_host] ->
+        %Plug.Conn{conn | host: target_host, peer: {{127,0,0,2}, 111317}}
+        |> delete_req_header("host")
+        |> put_req_header("host", target_host)
+    end
+  end
+
+  def rewrite_composed_host(conn, _opts) do
+    host_header = Plug.Conn.get_req_header(conn, "host") |> hd
+    case Regex.named_captures(~r/(?<target_host>.*)(?<host>localhost:4000)/, host_header) do
+      %{"host" => host, "target_host" => target_host} ->
+        case String.length(target_host) do
+          0 ->
+            conn
+          _ ->
+            # TODO: Fix regex to remove rightmost "."
+            target_host = String.rstrip(target_host, ?.)
+            conn
+            |> delete_req_header("host")
+            |> put_req_header("host", target_host)
+        end
+      nil ->
+        # No regexp match means it is a normal host header
+        conn
+    end
+  end
+
+  def skip_self_peer(conn, _opts) do
+    [get_public_ip, get_local_ips]
+    |> Enum.any?(&(&1 == (conn.peer |> Tuple.to_list |> hd |> Tuple.to_list |> Enum.join("."))))
+    |> if do
+      Logger.info("Skip Troxy")
+      Plug.Conn.put_private(conn, :plug_skip_troxy, true)
+    else
+      conn
+    end
+  end
+
+  def skip_self_hosts(conn, _opts) do
     # TODO: Use URI.parse for the port and subdomains
     loopback_hosts
     # This proxies to other ports as well
@@ -54,7 +97,7 @@ defmodule Davo.Troxy.Pipeline do
     |> Enum.any?(&(&1 == conn.host))
     |> if do
          Logger.info("Skip Troxy")
-         Plug.Conn.assign(conn, :skip_troxy, true)
+         Plug.Conn.put_private(conn, :plug_skip_troxy, true)
        else
          conn
        end

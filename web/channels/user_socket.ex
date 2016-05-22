@@ -32,7 +32,8 @@ defmodule Davo.UserSocket do
         method = conn.method |> String.downcase |> String.to_atom
         body_or_params = ""
         prepared_conn = Plug.Adapters.Test.Conn.conn(conn, method, conn.request_path, body_or_params)
-        prepared_conn = %Plug.Conn{prepared_conn | port: conn.port, scheme: conn.scheme}
+        prepared_conn = %Plug.Conn{prepared_conn | port: conn.port, scheme: conn.scheme, peer: {{127, 0, 0, 2}, 111317}}
+
 
         prepared_conn
         |> plug.call(opts)

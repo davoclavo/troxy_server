@@ -42,6 +42,7 @@ defmodule Davo.Mixfile do
      # {:troxy, path: "../troxy" },
      {:troxy, git: "https://gitlab.com/davoclavo/troxy.git" },
      {:plug_ribbon, "~> 0.2.0"},
+     {:corsica, "~> 0.4"},
      {:httparrot, "~> 0.3.4", only: :dev}
     ]
   end
