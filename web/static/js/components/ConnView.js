@@ -31,7 +31,6 @@ channel.join()
 class ConnView extends React.Component {
   componentDidMount() {
     channel.on('conn:req', conn => {
-      let conns = this.props.conns;
       const conn_id = conn.assigns.id;
       this.props.addConn(conn)
 
@@ -65,11 +64,14 @@ class ConnView extends React.Component {
     return (
       <div>
         <ConnSidebar
-          conns={conns}
-          selectConn={this.props.selectConn}
-          selectedConn={this.props.ui.selectedConn}
-          sendConn={this.props.sendConn}/>
-        <ConnDetails conn={conns[this.props.ui.selectedConn]} />
+           conns={conns}
+           selectConn={this.props.selectConn}
+           selected_conn_id={this.props.ui.selected_conn_id}
+           sendConn={this.props.sendConn}
+           />
+        <ConnDetails
+           conn={conns[this.props.ui.selected_conn_id]}
+           />
       </div>
     );
   }

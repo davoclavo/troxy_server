@@ -13,7 +13,7 @@ class ConnSidebar extends React.Component {
     return <ConnSummary
              conn={conn}
              key={key}
-             selected={conn_id === this.props.selectedConn}
+             selected={conn_id === this.props.selected_conn_id}
              selectConn={() => this.props.selectConn(conn.assigns.id)}
              sendConn={() => this.props.sendConn(conn)}
            />;
@@ -26,14 +26,14 @@ class ConnSidebar extends React.Component {
       itemRenderer={this.renderItem}
       length={Object.keys(this.props.conns).length}
       type='uniform'
-      updateWhenThisValueChanges={this.props.selectedConn}
+      updateWhenThisValueChanges={this.props.selected_conn_id}
         />
         </div>
     );
   }
 }
 ConnSidebar.propTypes = {
-  selectedConn: PropTypes.string,
+  selected_conn_id: PropTypes.string,
   selectConn: PropTypes.func.isRequired,
   conns: PropTypes.object.isRequired,
   sendConn: PropTypes.func.isRequired
