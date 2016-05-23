@@ -36,7 +36,7 @@ var ExtractTextPlugin = require("extract-text-webpack-plugin");
 module.exports = {
   devtool: "source-map",
   entry: {
-    "app": ["./web/static/css/app.scss", "./web/static/js/app.js"],
+    "app": ["./web/static/css/app.scss", "./web/static/js/index.js"],
   },
 
   output: {
@@ -67,8 +67,7 @@ module.exports = {
           "style",
           "css!sass?includePaths[]=" + __dirname +  "/node_modules"
         )
-      },
-      {
+      }, {
         test: /\.(ttf|eot|svg|woff2?)$/,
         loader : "file-loader?name=fonts/[name].[ext]"
       }
