@@ -1,19 +1,21 @@
-export const selectConn = (conn_id) => {
+import * as types from '../constants/ActionTypes'
+
+export function selectConn(conn_id) {
   // console.log("Conn selected: " + conn_id)
   return {
-    type: 'SELECT_CONN',
+    type: types.SELECT_CONN,
     conn_id
   }
 }
 
-export const sendConn = (conn) => {
-  console.warn("Request! " + conn.request_path);
-  let xhr = new XMLHttpRequest();
+export function sendConn(conn) {
+  console.warn("Request! " + conn.request_path)
+  let xhr = new XMLHttpRequest()
   // Send request to window.location.origin and add x-troxy-host header
-  let uri = new URL(window.location.origin);
+  let uri = new URL(window.location.origin)
 
   // TODO: Support this notation i.imgur.com.davo.io
-  /* uri.host = conn.host + "." + uri.host; */
+  /* uri.host = conn.host + "." + uri.host */
 
   let target_uri = Object.assign(uri,
                                  {
@@ -26,34 +28,48 @@ export const sendConn = (conn) => {
                                     protocol: "http:",
                                     search: "",
                                     username: "" */
-                                 });
+                                 })
 
-  // TODO: Write a host rewrite for Troxy
-  xhr.open('GET', target_uri.href, true);
-  xhr.setRequestHeader("X-Troxy-Host", conn.host);
-  xhr.setRequestHeader("Cache-Control", "no-cache");
-  xhr.setRequestHeader("Pragma", "no-cache");
+  xhr.open('GET', target_uri.href, true)
+  xhr.setRequestHeader("X-Troxy-Host", conn.host)
+  xhr.setRequestHeader("Cache-Control", "no-cache")
+  xhr.setRequestHeader("Pragma", "no-cache")
 
-  xhr.send();
+  xhr.send()
   // console.log("Conn selected: " + conn_id)
   return {
-    type: 'SEND_CONN',
+    type: types.SEND_CONN,
     xhr
   }
 }
 
-export const addConn = (conn) => {
-  // console.log("Conn added: " + conn.assigns.id)
+export function addConn(conn, channel) {
   return {
-    type: 'ADD_CONN',
+    type: types.ADD_CONN,
     conn
   }
 }
 
-export const updateConn = (conn) => {
-  // console.log("Conn updated: " + conn.assigns.id)
+export function chunkBodyConn(conn_id, changeset) {
   return {
-    type: 'UPDATE_CONN',
-    conn
+    type: types.CHUNK_BODY_CONN,
+    conn_id,
+    changeset
+  }
+}
+
+export function addRespConn(conn_id, changeset) {
+  return {
+    type: types.ADD_RESP_CONN,
+    conn_id,
+    changeset
+  }
+}
+
+export function deleteConn(conn_id) {
+  // console.log("Conn deleted: " + conn_id)
+  return {
+    type: types.DELETE_CONN,
+    conn_id
   }
 }

@@ -1,6 +1,6 @@
-import React, { PropTypes } from 'react';
-import Headers from './Headers';
-import Body from './Body';
+import React, { PropTypes } from 'react'
+import Headers from './Headers'
+import Body from './Body'
 
 const Request = ({conn, more_body}) => {
   return(
@@ -26,4 +26,4 @@ Request.propTypes = {
   more_body: PropTypes.bool
 }
 
-export default Request;
+export default Request

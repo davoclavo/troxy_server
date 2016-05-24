@@ -1,8 +1,8 @@
-import React, { PropTypes } from 'react'
+import React, { Component, PropTypes } from 'react'
 import ReactList from 'react-list';
 import ConnSummary from './ConnSummary';
 
-class ConnSidebar extends React.Component {
+class ConnSidebar extends Component {
   constructor(props) {
     super(props);
     this.renderItem = this.renderItem.bind(this);

@@ -1,8 +1,9 @@
 import { combineReducers } from 'redux'
 import davo from './davo'
+// import searchFilter from './searchFilter'
 
-const index = combineReducers({
+const davoApp = combineReducers({
   davo
 })
 
-export default index
+export default davoApp

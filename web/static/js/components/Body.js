@@ -1,4 +1,4 @@
-import React, { PropTypes } from 'react'
+import React, { Component, PropTypes } from 'react'
 import RadioGroup from 'react-radio';
 import rasterizeHTML from 'rasterizehtml';
 import AceEditor from 'react-ace';
@@ -7,7 +7,7 @@ import 'brace/mode/html';
 import 'brace/theme/github';
 import 'brace/theme/monokai';
 
-class Body extends React.Component {
+class Body extends Component {
   constructor(props) {
     super(props);
     this.state = {
