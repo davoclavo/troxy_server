@@ -16,6 +16,7 @@ class ConnSidebar extends Component {
              selected={conn_id === this.props.selected_conn_id}
              selectConn={() => this.props.selectConn(conn.assigns.id)}
              sendConn={() => this.props.sendConn(conn)}
+             deleteConn={() => this.props.deleteConn(conn_id)}
            />;
   }
   render() {
@@ -23,10 +24,10 @@ class ConnSidebar extends Component {
     return(
         <div className='sidebar'>
         <ReactList
-      itemRenderer={this.renderItem}
-      length={Object.keys(this.props.conns).length}
-      type='uniform'
-      updateWhenThisValueChanges={this.props.selected_conn_id}
+          itemRenderer={this.renderItem}
+          length={Object.keys(this.props.conns).length}
+          type='uniform'
+          updateWhenThisValueChanges={this.props.selected_conn_id}
         />
         </div>
     );

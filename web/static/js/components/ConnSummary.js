@@ -1,7 +1,7 @@
 import React, { PropTypes } from 'react'
 import classNames from 'classnames';
 
-const ConnSummary = ({selected, selectConn, conn, sendConn}) => {
+const ConnSummary = ({conn, selected, selectConn, sendConn, deleteConn}) => {
   const classes = classNames({
     'is-selected': selected,
     'conn': true
@@ -14,6 +14,7 @@ const ConnSummary = ({selected, selectConn, conn, sendConn}) => {
       <br/>
       <span className='status'>{conn.status}</span>
       <span>{conn.resp_headers['content-type']}</span>
+      <a className='action--delete' onClick={deleteConn}><span className='glyphicon glyphicon-remove'></span></a>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import ConnSidebar from './ConnSidebar';
 class ConnView extends Component {
   render() {
     const conns = this.props.conns;
-    const { selectConn, sendConn } = this.props.actions
+    const { selectConn, sendConn, deleteConn } = this.props.actions
     return (
       <div>
         <ConnSidebar
@@ -14,6 +14,7 @@ class ConnView extends Component {
            selectConn={selectConn}
            selected_conn_id={this.props.ui.selected_conn_id}
            sendConn={sendConn}
+           deleteConn={deleteConn}
            />
         <ConnDetails
            conn={conns[this.props.ui.selected_conn_id]}

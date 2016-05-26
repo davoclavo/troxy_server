@@ -1,6 +1,8 @@
 import React, { PropTypes } from 'react'
+import ReactTabs, { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
 import Response from './Response';
 import Request from './Request';
+
 // import moment from 'moment';
 
 const ConnDetails = ({conn}) => {
@@ -9,10 +11,21 @@ const ConnDetails = ({conn}) => {
   } else {
     return (
       <div className='details'>
-        <Request conn={conn} />
-        <Response conn={conn} />
+        <Tabs selectedIndex={1}>
+          <TabList>
+            <Tab>Request</Tab>
+            <Tab>Response</Tab>
+          </TabList>
+
+          <TabPanel>
+            <Request conn={conn} />
+          </TabPanel>
+          <TabPanel>
+            <Response conn={conn} />
+          </TabPanel>
+        </Tabs>
       </div>
-    );
+    )
   }
 }
 ConnDetails.propTypes = {

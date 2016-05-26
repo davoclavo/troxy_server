@@ -55,6 +55,12 @@ html {
         float: right;
         color: $background-color;
       }
+
+      .action--delete {
+        float: right;
+        color: $background-color;
+        padding-top: 3px;
+      }
     }
   }
 

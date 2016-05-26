@@ -38,9 +38,12 @@
     "react-dom": "^0.14.0",
     "react-ace": "",
     "react-radio": "^2.1.1",
+      "react-tabs": "^0.5.3",
+      "react-router": "^2.4.1",
     "brace": "^0.8.0",
     "react-list": "^0.7.18",
-    "react-redux": "^4.4.5"
+      "react-redux": "^4.4.5",
+      "react-router-redux": "^4.0.4"
   },
   "scripts": {
     "start": "webpack --watch-stdin --colors",
