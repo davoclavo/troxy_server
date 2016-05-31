@@ -20,7 +20,7 @@ defmodule Davo.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-  def connect(_params, socket) do
+  def connect(%{"room" => room}, socket) do
     Task.start_link(fn ->
       :timer.sleep(1000)
       Davo.Repo.get_demo
@@ -39,7 +39,7 @@ defmodule Davo.UserSocket do
         |> plug.call(opts)
       end)
     end)
-    {:ok, socket}
+    {:ok, assign(socket, :room, room)}
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
@@ -53,4 +53,5 @@ defmodule Davo.UserSocket do
   #
   # Returning `nil` makes this socket anonymous.
   def id(_socket), do: nil
+  # def id(socket), do: "users_socket:#{socket.assigns.room}"
 end

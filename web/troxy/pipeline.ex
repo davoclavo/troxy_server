@@ -5,6 +5,7 @@ defmodule Davo.Troxy.Pipeline do
   # plug :rewrite_composed_host
   plug :rewrite_troxy_host_header
   plug :skip_self_peer # And let the normal phoenix router handle the conn
+  plug :assign_room_from_proxy_authorization
   # plug :skip_self_hosts
   # plug :cookies # Support upstream cookies
   # plug :inject_js # inject custom js
@@ -40,17 +41,34 @@ defmodule Davo.Troxy.Pipeline do
   # Troxy helper functions
   ########################
 
+  def assign_room_from_proxy_authorization(conn, _opts) do
+    case Plug.Conn.get_req_header(conn, "proxy-authorization") do
+      ["Basic " <> encoded_auth] ->
+        room = Base.decode64!(encoded_auth)
+        |> String.split(":")
+        |> hd
+
+        conn
+        |> Plug.Conn.delete_req_header("proxy-authorization")
+        |> Plug.Conn.assign(:room, room)
+      _ ->
+        conn
+        |> Plug.Conn.assign(:room, "") # Lobby
+    end
+  end
+
   def assign_request_id(conn, _opts) do
     [conn_id] = Plug.Conn.get_resp_header(conn, "x-request-id")
     Plug.Conn.assign(conn, :id, conn_id)
   end
 
   def rewrite_troxy_host_header(conn, _opts) do
-    case get_req_header(conn, "x-troxy-host") do
+    case Plug.Conn.get_req_header(conn, "x-troxy-host") do
       [] ->
         conn
       [target_host] ->
         %Plug.Conn{conn | host: target_host, peer: {{127,0,0,2}, 111317}}
+        |> delete_req_header("x-troxy-host")
         |> delete_req_header("host")
         |> put_req_header("host", target_host)
     end
@@ -157,24 +175,36 @@ defmodule Davo.Troxy.Pipeline do
   # Troxy in-module handlers
   ##########################
 
-  @channel_name "users:lobby"
+  @topic "users:lobby"
 
   def req_handler(conn) do
     # Is broadcast async?? if not, I think it should
     # require IEx
     # IEx.pry
     Logger.info("Request proxied")
-    Davo.Endpoint.broadcast(@channel_name, "conn:req", conn)
+
+    req_headers = Enum.into(conn.req_headers, %{})
+    msg = conn
+    |> Map.take([:scheme, :host, :port, :method, :request_path, :query_string, :assigns])
+    |> Map.merge(%{req_headers: req_headers})
+    |> Map.merge(%{conn_id: conn.assigns.id,
+                   room: conn.assigns.room})
+
+    Davo.Endpoint.broadcast(@topic, "conn:req", msg)
     conn
   end
 
   def req_body_handler(conn, body_chunk, more_body) do
     Logger.info("Request body chunk")
-    conn_id = conn.assigns[:id]
     # replaced_chunk = String.replace(body_chunk, "davoclavo", "carletex")
     encoded_body_chunk = Base.encode64(body_chunk)
-
-    Davo.Endpoint.broadcast(@channel_name, "conn:req_body_chunk:" <> conn_id, %{body_chunk: encoded_body_chunk, more_body: more_body})
+    msg = %{
+      room: conn.assigns.room,
+      conn_id: conn.assigns.id,
+      body_chunk: encoded_body_chunk,
+      more_body: more_body
+    }
+    Davo.Endpoint.broadcast(@topic, "conn:req_body_chunk", msg)
     conn
   end
 
@@ -182,8 +212,14 @@ defmodule Davo.Troxy.Pipeline do
     # require IEx
     # IEx.pry
     Logger.info("Response proxied")
-    conn_id = conn.assigns[:id]
-    Davo.Endpoint.broadcast(@channel_name, "conn:resp:" <> conn_id, conn)
+    resp_headers = Enum.into(conn.resp_headers, %{})
+    msg = %{
+      room: conn.assigns.room,
+      conn_id: conn.assigns.id,
+      status: conn.status,
+      resp_headers: resp_headers
+    }
+    Davo.Endpoint.broadcast(@topic, "conn:resp", msg)
     conn
   end
 
@@ -192,13 +228,18 @@ defmodule Davo.Troxy.Pipeline do
     conn_id = conn.assigns[:id]
     # replaced_chunk = String.replace(body_chunk, "davoclavo", "carletex")
     encoded_body_chunk = Base.encode64(body_chunk)
-
-    Davo.Endpoint.broadcast(@channel_name, "conn:resp_body_chunk:" <> conn_id, %{body_chunk: encoded_body_chunk, more_body: more_body})
+    msg = %{
+      room: conn.assigns.room,
+      conn_id: conn.assigns.id,
+      body_chunk: encoded_body_chunk,
+      more_body: more_body
+    }
+    Davo.Endpoint.broadcast(@topic, "conn:resp_body_chunk", msg)
     conn
   end
 
   def broadcast_conn(conn) do
-    Davo.Endpoint.broadcast(@channel_name, "conn:req", conn)
+    Davo.Endpoint.broadcast(@topic, "conn:req", conn)
   end
 end
 
@@ -209,11 +250,10 @@ defimpl Poison.Encoder, for: Plug.Conn do
     # TODO: Treat proplists as arrays to preserve order
     # kwlists to maps to be able to JSON encodify easily
     req_headers = Enum.into(conn.req_headers, %{})
-    resp_headers = Enum.into(conn.resp_headers, %{})
 
     conn
-    |> Map.take([:scheme, :host, :port, :method, :request_path, :query_string, :status, :assigns])
-    |> Map.merge(%{req_headers: req_headers, resp_headers: resp_headers})
+    |> Map.take([:scheme, :host, :port, :method, :request_path, :query_string, :assigns])
+    |> Map.merge(%{req_headers: req_headers})
     |> Poison.encode!
   end
 end

@@ -15,13 +15,14 @@ export default function davo(state = initialState, action) {
         ui: {...state.ui, selected_conn_id: action.conn_id }
       }
     case types.ADD_CONN:
-      var conn_id = action.conn.assigns.id
-
+      var { conn_id, changeset } = action
+      const { scheme, host, port, method, request_path, query_string, assigns, req_headers } = changeset
+      const connDiff = { scheme, host, port, method, request_path, query_string, assigns, req_headers }
       return {
         ...state,
         conns: {
           ...state.conns,
-          [conn_id]: action.conn
+          [conn_id]: connDiff
         }
       }
     case types.CHUNK_BODY_CONN:

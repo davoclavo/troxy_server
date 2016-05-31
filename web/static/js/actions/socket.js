@@ -3,48 +3,49 @@ import { Socket } from 'phoenix'
 const setupHandlers = (name, channel, dispatch) => {
   switch(name) {
   case 'users:lobby':
-    channel.on('conn:req', conn => {
+    channel.on('conn:req', data => {
+      const { scheme, host, port, method, request_path, query_string, assigns, req_headers } = data
+      const changeset = { scheme, host, port, method, request_path, query_string, assigns, req_headers }
       dispatch({
         type: 'ADD_CONN',
-        conn: conn
+        conn_id: data.conn_id,
+        changeset
       })
-
-      const conn_id = conn.assigns.id
-      channel.on('conn:req_body_chunk:' + conn_id, data => {
-        const decoded_chunk = atob(data.body_chunk)
-        const changeset = {
-          body_chunk: decoded_chunk,
-          more_body: data.more_body,
-          body_type: "req_body"
-        }
-        dispatch({
-          type: 'CHUNK_BODY_CONN',
-          conn_id,
-          changeset
-        })
+    })
+    channel.on('conn:req_body_chunk', data => {
+      const decoded_chunk = atob(data.body_chunk)
+      const changeset = {
+        body_chunk: decoded_chunk,
+        more_body: data.more_body,
+        body_type: "req_body"
+      }
+      dispatch({
+        type: 'CHUNK_BODY_CONN',
+        conn_id: data.conn_id,
+        changeset
       })
-      channel.on('conn:resp:' + conn_id, conn => {
-        // TODO: how to write this cleaner while whitelisting fields?
-        const { status, resp_headers } = conn
-        const changeset = { status, resp_headers }
-        dispatch({
-          type: 'ADD_RESP_CONN',
-          conn_id,
-          changeset
-        })
+    })
+    channel.on('conn:resp', data => {
+      // TODO: how to write this cleaner while whitelisting fields?
+      const { status, resp_headers } = data
+      const changeset = { status, resp_headers }
+      dispatch({
+        type: 'ADD_RESP_CONN',
+        conn_id: data.conn_id,
+        changeset
       })
-      channel.on('conn:resp_body_chunk:' + conn_id, data => {
-        const decoded_chunk = atob(data.body_chunk)
-        const changeset = {
-          body_chunk: decoded_chunk,
-          more_body: data.more_body,
-          body_type: "resp_body"
-        }
-        dispatch({
-          type: 'CHUNK_BODY_CONN',
-          conn_id,
-          changeset
-        })
+    })
+    channel.on('conn:resp_body_chunk', data => {
+      const decoded_chunk = atob(data.body_chunk)
+      const changeset = {
+        body_chunk: decoded_chunk,
+        more_body: data.more_body,
+        body_type: "resp_body"
+      }
+      dispatch({
+        type: 'CHUNK_BODY_CONN',
+        conn_id: data.conn_id,
+        changeset
       })
     })
     break
@@ -56,7 +57,9 @@ const setupHandlers = (name, channel, dispatch) => {
 export default {
   socket_connect: () => {
     return (dispatch) => {
-      const socket = new Socket('/socket', {params: {token: window.userToken}})
+      const room = window.location.hostname.split('.').shift()
+      console.log(room)
+      const socket = new Socket('/socket', {params: { room }})
       socket.connect()
       dispatch({
         type: 'SOCKET_CONNECTED',

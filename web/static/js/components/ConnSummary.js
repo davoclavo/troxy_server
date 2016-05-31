@@ -6,6 +6,7 @@ const ConnSummary = ({conn, selected, selectConn, sendConn, deleteConn}) => {
     'is-selected': selected,
     'conn': true
   });
+  const content_type = conn.resp_headers && conn.resp_headers['content-type']
   return(
     <div className={classes} onClick={selectConn}>
       <span className='method'>{conn.method}</span>
@@ -13,7 +14,7 @@ const ConnSummary = ({conn, selected, selectConn, sendConn, deleteConn}) => {
       <a className='action--resend' onClick={sendConn}><span className='glyphicon glyphicon-repeat'></span></a>
       <br/>
       <span className='status'>{conn.status}</span>
-      <span>{conn.resp_headers['content-type']}</span>
+      <span>{content_type}</span>
       <a className='action--delete' onClick={deleteConn}><span className='glyphicon glyphicon-remove'></span></a>
     </div>
   );
