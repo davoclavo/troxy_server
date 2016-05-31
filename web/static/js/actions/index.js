@@ -43,29 +43,6 @@ export function sendConn(conn) {
   }
 }
 
-export function addConn(conn, channel) {
-  return {
-    type: types.ADD_CONN,
-    conn
-  }
-}
-
-export function chunkBodyConn(conn_id, changeset) {
-  return {
-    type: types.CHUNK_BODY_CONN,
-    conn_id,
-    changeset
-  }
-}
-
-export function addRespConn(conn_id, changeset) {
-  return {
-    type: types.ADD_RESP_CONN,
-    conn_id,
-    changeset
-  }
-}
-
 export function deleteConn(conn_id) {
   // console.log("Conn deleted: " + conn_id)
   return {

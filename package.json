@@ -21,7 +21,7 @@
     "node-sass": "^3.4.1",
     "sass-loader": "^3.1.1",
     "style-loader": "^0.13.0",
-    "redux-devtools": "^3.3.1"
+      "redux-devtools": "^3.3.1"
   },
   "dependencies": {
     "classnames": "^2.2.0",
@@ -32,7 +32,6 @@
     "phoenix_html": "file:deps/phoenix_html",
     "bootstrap-sass": "^3.3.6",
     "rasterizehtml": "^1.2.2",
-
     "react": "^0.14.0",
     "react-addons-css-transition-group": "^0.14.0",
     "react-dom": "^0.14.0",
@@ -43,7 +42,8 @@
     "brace": "^0.8.0",
     "react-list": "^0.7.18",
       "react-redux": "^4.4.5",
-      "react-router-redux": "^4.0.4"
+      "react-router-redux": "^4.0.4",
+      "redux-thunk": "^2.1.0"
   },
   "scripts": {
     "start": "webpack --watch-stdin --colors",

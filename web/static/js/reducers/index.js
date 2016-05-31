@@ -1,9 +1,10 @@
 import { combineReducers } from 'redux'
+import { routerReducer } from 'react-router-redux'
 import davo from './davo'
-// import searchFilter from './searchFilter'
+import socket from './socket'
 
-const davoApp = combineReducers({
-  davo
+export default combineReducers({
+  routing: routerReducer,
+  davo,
+  socket
 })
-
-export default davoApp
