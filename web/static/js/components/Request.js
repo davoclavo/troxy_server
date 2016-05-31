@@ -14,7 +14,7 @@ const Request = ({conn, more_body}) => {
         headers={conn.req_headers}
       />
       <Body className='req_body'
-        content_type={conn.req_headers['content-type']}
+        headers={conn.req_headers}
         body={conn.req_body}
         more_body={more_body}
       />

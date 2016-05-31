@@ -7,7 +7,11 @@ const Response = ({conn, more_body}) => {
     <div className='response'>
       <span className='status'>{conn.status}</span>
       <Headers className='resp_headers' headers={conn.resp_headers} />
-      <Body className='resp_body' content_type={conn.resp_headers['content-type']} body={conn.resp_body} more_body={more_body}/>
+      <Body className='resp_body'
+        headers={conn.resp_headers}
+        body={conn.resp_body}
+        more_body={more_body}
+      />
       {/* TODO: Timing */}
       {/* TODO: SSL */}
       {/* TODO: Settings(follow_redirects?) */}
