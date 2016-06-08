@@ -41,7 +41,7 @@ defmodule Davo.Mixfile do
      {:gettext, "~> 0.9"},
      {:cowboy, "~> 1.0"},
      # {:troxy, path: "../troxy" },
-     {:troxy, github: "davoclavo/troxy_plug" },
+     {:troxy, github: "davoclavo/troxy_plug", app: false},
      {:plug_ribbon, "~> 0.2.0"},
      {:exrm, "~> 1.0.5"},
      {:edeliver, "~> 1.2.8"}
