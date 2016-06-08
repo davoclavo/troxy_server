@@ -10,10 +10,10 @@ config :davo, Davo.Endpoint,
 config :logger, level: :warn
 
 # Configure your database
-config :davo, Davo.Repo,
-  adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
-  database: "davo_test",
-  hostname: "localhost",
-  pool: Ecto.Adapters.SQL.Sandbox
+# config :davo, Davo.Repo,
+#   adapter: Ecto.Adapters.Postgres,
+#   username: "postgres",
+#   password: "postgres",
+#   database: "davo_test",
+#   hostname: "localhost",
+#   pool: Ecto.Adapters.SQL.Sandbox

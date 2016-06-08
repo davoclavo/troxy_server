@@ -36,10 +36,10 @@ config :logger, :console, format: "[$level] $message\n"
 config :phoenix, :stacktrace_depth, 20
 
 # Configure your database
-config :davo, Davo.Repo,
-  adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
-  database: "davo_dev",
-  hostname: "localhost",
-  pool_size: 10
+# config :davo, Davo.Repo,
+#   adapter: Ecto.Adapters.Postgres,
+#   username: "postgres",
+#   password: "postgres",
+#   database: "davo_dev",
+#   hostname: "localhost",
+#   pool_size: 10
