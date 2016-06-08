@@ -10,7 +10,7 @@ defmodule Davo do
       # Start the endpoint when the application starts
       supervisor(Davo.Endpoint, []),
       # Start the Ecto repository
-      supervisor(Davo.Repo, []),
+      # supervisor(Davo.Repo, []),
       # Here you could define other workers and supervisors as children
       # worker(Davo.Worker, [arg1, arg2, arg3]),
     ]
