@@ -19,7 +19,8 @@ defmodule Davo.Mixfile do
   def application do
     [mod: {Davo, []},
      applications: [:phoenix, :phoenix_html, :cowboy, :logger, :gettext,
-                    :phoenix_ecto, :postgrex, :troxy]]
+                    :phoenix_ecto, :postgrex, :troxy,
+                    :phoenix_live_reload, :edeliver]]
   end
 
   # Specifies which paths to compile per environment.
@@ -36,12 +37,14 @@ defmodule Davo.Mixfile do
      {:phoenix_ecto, "~> 2.0"},
      {:phoenix_html, "~> 2.4"},
      # {:phoenix_live_reload, "~> 1.0", only: :dev},
-     {:phoenix_live_reload, github: "phoenixframework/phoenix_live_reload", only: :dev},
+     {:phoenix_live_reload, github: "phoenixframework/phoenix_live_reload"},
      {:gettext, "~> 0.9"},
      {:cowboy, "~> 1.0"},
      # {:troxy, path: "../troxy" },
-     {:troxy, git: "https://gitlab.com/davoclavo/troxy.git" },
-     {:plug_ribbon, "~> 0.2.0"}
+     {:troxy, git: "https://github.com/davoclavo/troxy_plug.git" },
+     {:plug_ribbon, "~> 0.2.0"},
+     {:exrm, "~> 1.0.5"},
+     {:edeliver, "~> 1.2.8"}
     ]
   end
 

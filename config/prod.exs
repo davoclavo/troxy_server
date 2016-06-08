@@ -18,6 +18,8 @@ config :davo, Davo.Endpoint,
         # Used to pattern match in the Troxy pipeline
         ip: System.get_env("PUBLIC_IP")
        ],
+  server: true,
+  code_reloader: false,
   cache_static_manifest: "priv/static/manifest.json"
 
 # Do not print debug messages in production
