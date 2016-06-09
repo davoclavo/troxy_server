@@ -19,7 +19,7 @@ defmodule Davo.Mixfile do
   def application do
     [mod: {Davo, []},
      applications: [:phoenix, :phoenix_html, :cowboy, :logger, :gettext,
-                    :phoenix_ecto, :postgrex, :plug_ribbon,
+                    :phoenix_ecto, :postgrex, :plug_ribbon, :troxy,
                     :phoenix_live_reload, :edeliver]]
   end
 
