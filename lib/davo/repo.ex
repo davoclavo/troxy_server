@@ -1,5 +1,5 @@
 defmodule Davo.Repo do
-  use Ecto.Repo, otp_app: :davo
+  # use Ecto.Repo, otp_app: :davo
 
   def get_demo do
     [

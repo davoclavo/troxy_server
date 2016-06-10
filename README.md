@@ -1,18 +1,11 @@
-# [davo.io](https://davo.io)
+# Troxy Server
 
 Manage your HTTP traffic
-
-## Features
-
-  * Multiple body renderings
-  * Resend
-  * Powered by Troxy
-
 ## Development
 
   * Install dependencies with `mix deps.get; npm install`
   * Start Phoenix endpoint with `mix phoenix.server`
-  * ...or start **interactive** Phoenix endpoint with `iex -S mix phoenix.server`
+  * ... or start interactive Phoenix endpoint with `iex -S mix phoenix.server`
 
 Now open the ui visiting [`localhost:4000`](http://localhost:4000), then set your device HTTP proxy to localhost:4000 and start managing your HTTP traffic.
 
