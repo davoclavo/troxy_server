@@ -18,11 +18,11 @@ defmodule Davo.Web do
 
   def model do
     quote do
-      use Ecto.Schema
+      # use Ecto.Schema
 
-      import Ecto
-      import Ecto.Changeset
-      import Ecto.Query, only: [from: 1, from: 2]
+      # import Ecto
+      # import Ecto.Changeset
+      # import Ecto.Query, only: [from: 1, from: 2]
     end
   end
 
@@ -31,8 +31,8 @@ defmodule Davo.Web do
       use Phoenix.Controller
 
       alias Davo.Repo
-      import Ecto
-      import Ecto.Query, only: [from: 1, from: 2]
+      # import Ecto
+      # import Ecto.Query, only: [from: 1, from: 2]
 
       import Davo.Router.Helpers
       import Davo.Gettext
@@ -66,8 +66,8 @@ defmodule Davo.Web do
       use Phoenix.Channel
 
       alias Davo.Repo
-      import Ecto
-      import Ecto.Query, only: [from: 1, from: 2]
+      # import Ecto
+      # import Ecto.Query, only: [from: 1, from: 2]
       import Davo.Gettext
     end
   end

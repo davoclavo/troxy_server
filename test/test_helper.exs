@@ -2,5 +2,5 @@ ExUnit.start
 
 Mix.Task.run "ecto.create", ~w(-r Davo.Repo --quiet)
 Mix.Task.run "ecto.migrate", ~w(-r Davo.Repo --quiet)
-Ecto.Adapters.SQL.begin_test_transaction(Davo.Repo)
+# Ecto.Adapters.SQL.begin_test_transaction(Davo.Repo)
 
