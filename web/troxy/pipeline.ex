@@ -53,7 +53,7 @@ defmodule Davo.Troxy.Pipeline do
         |> Plug.Conn.assign(:room, room)
       _ ->
         conn
-        |> Plug.Conn.assign(:room, "") # Lobby
+        |> Plug.Conn.assign(:room, "lobby") # Lobby
     end
   end
 
