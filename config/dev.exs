@@ -18,11 +18,11 @@ config :davo, Davo.Endpoint,
 config :davo, Davo.Endpoint,
   live_reload: [
     patterns: [
-      ~r{lib/.*(ex)$},
+      ~r{lib/[^#]*(ex)$},
       ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
       ~r{priv/gettext/.*(po)$},
-      ~r{web/views/.*(ex)$},
-      ~r{web/troxy/.*(ex)$},
+      ~r{web/views/[^#]*(ex)$},
+      ~r{web/troxy/[^#]*(ex)$},
       ~r{web/templates/.*(eex)$}
     ]
   ]

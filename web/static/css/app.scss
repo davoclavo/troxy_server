@@ -21,16 +21,18 @@ html {
 }
 
 #conns {
+  height: 100vh;
+  max-height: 100vh;
+
   .sidebar {
     width: 20%;
     display: inline-block;
     vertical-align: top;
     overflow: auto;
-    max-height: 100vh;
+    height: 100vh;
 
     .conn {
       cursor: pointer;
-
       padding: 10px;
       transition: 0.1s all;
       background: $background-color;
@@ -48,6 +50,17 @@ html {
         font-weight: bold;
         margin-right: 0.5rem;
       }
+
+      .action--resend {
+        float: right;
+        color: $background-color;
+      }
+
+      .action--delete {
+        float: right;
+        color: $background-color;
+        padding-top: 3px;
+      }
     }
   }
 
@@ -55,9 +68,10 @@ html {
     width: 80%;
     display: inline-block;
     vertical-align: top;
-    padding: 10px 20px;
-    background: #E6E2E2;
-
+    padding: 10px;
+    background: $background-color;
+    overflow: auto;
+    height: 100vh;
     .headers {
       list-style: none;
       padding-left: 0;

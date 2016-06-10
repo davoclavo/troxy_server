@@ -40,6 +40,8 @@ defmodule Davo.Mixfile do
      {:phoenix_live_reload, github: "phoenixframework/phoenix_live_reload"},
      {:gettext, "~> 0.9"},
      {:cowboy, "~> 1.0"},
+     {:corsica, "~> 0.4"},
+     {:httparrot, "~> 0.3.4", only: :dev},
      # {:troxy, path: "../troxy" },
      {:troxy, github: "davoclavo/troxy_plug", app: false},
      {:plug_ribbon, "~> 0.2.0"},
