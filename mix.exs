@@ -19,8 +19,8 @@ defmodule Davo.Mixfile do
   def application do
     [mod: {Davo, []},
      applications: [:phoenix, :phoenix_html, :cowboy, :logger, :gettext,
-                    :phoenix_ecto, :postgrex, :plug_ribbon,
-                    :troxy, :corsica, :httparrot,
+                    # :phoenix_ecto, :postgrex,
+                    :troxy, :corsica, :httparrot, :plug_ribbon,
                     :phoenix_live_reload, :edeliver]]
   end
 
@@ -34,8 +34,8 @@ defmodule Davo.Mixfile do
   defp deps do
     # [{:phoenix, "~> 1.1.4"},
     [{:phoenix, github: "phoenixframework/phoenix", override: true},
-     {:postgrex, ">= 0.0.0"},
-     {:phoenix_ecto, "~> 2.0"},
+     # {:postgrex, ">= 0.0.0"},
+     # {:phoenix_ecto, "~> 2.0"},
      {:phoenix_html, "~> 2.4"},
      # {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:phoenix_live_reload, github: "phoenixframework/phoenix_live_reload"},

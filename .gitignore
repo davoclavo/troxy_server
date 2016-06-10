@@ -23,3 +23,7 @@ erl_crash.dump
 # comment this depending on your deployment strategy.
 /priv/static/css
 /priv/static/js
+/priv/static/fonts
+
+# Relase artifacts
+/rel
