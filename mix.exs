@@ -44,7 +44,8 @@ defmodule Davo.Mixfile do
      {:troxy, github: "davoclavo/troxy_plug", app: false},
      {:plug_ribbon, "~> 0.2.0"},
      {:exrm, "~> 1.0.5"},
-     {:edeliver, "~> 1.2.8"}
+     # {:edeliver, "~> 1.2.8"}
+     {:edeliver, github: "boldpoker/edeliver"}
     ]
   end
 

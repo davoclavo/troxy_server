@@ -85,9 +85,6 @@ defmodule Davo.Troxy.Pipeline do
 
   def get_public_hosts do
     [Application.get_env(:davo, Davo.Endpoint)[:url][:host]]
-
-    # TODO: Parse the hosts
-    # {output, 0} = System.cmd("nslookup", [get_public_ip])
   end
 
   def remove_req_headers(conn, _opts) do
@@ -114,14 +111,14 @@ defmodule Davo.Troxy.Pipeline do
   # Troxy in-module handlers
   ##########################
 
-  @channel_name "users:lobby"
+  @topic "users:lobby"
 
   def req_handler(conn) do
     # Is broadcast async?? if not, I think it should
     # require IEx
     # IEx.pry
     Logger.info("Request proxied")
-    Davo.Endpoint.broadcast(@channel_name, "conn:req", conn)
+    Davo.Endpoint.broadcast(@topic, "conn:req", conn)
     conn
   end
 
@@ -131,7 +128,7 @@ defmodule Davo.Troxy.Pipeline do
     # replaced_chunk = String.replace(body_chunk, "davoclavo", "carletex")
     encoded_body_chunk = Base.encode64(body_chunk)
 
-    Davo.Endpoint.broadcast(@channel_name, "conn:req_body_chunk:" <> conn_id, %{body_chunk: encoded_body_chunk, more_body: more_body})
+    Davo.Endpoint.broadcast(@topic, "conn:req_body_chunk:" <> conn_id, %{body_chunk: encoded_body_chunk, more_body: more_body})
     conn
   end
 
@@ -140,7 +137,7 @@ defmodule Davo.Troxy.Pipeline do
     # IEx.pry
     Logger.info("Response proxied")
     conn_id = conn.assigns[:id]
-    Davo.Endpoint.broadcast(@channel_name, "conn:resp:" <> conn_id, conn)
+    Davo.Endpoint.broadcast(@topic, "conn:resp:" <> conn_id, conn)
     conn
   end
 
@@ -150,12 +147,12 @@ defmodule Davo.Troxy.Pipeline do
     # replaced_chunk = String.replace(body_chunk, "davoclavo", "carletex")
     encoded_body_chunk = Base.encode64(body_chunk)
 
-    Davo.Endpoint.broadcast(@channel_name, "conn:resp_body_chunk:" <> conn_id, %{body_chunk: encoded_body_chunk, more_body: more_body})
+    Davo.Endpoint.broadcast(@topic, "conn:resp_body_chunk:" <> conn_id, %{body_chunk: encoded_body_chunk, more_body: more_body})
     conn
   end
 
   def broadcast_conn(conn) do
-    Davo.Endpoint.broadcast(@channel_name, "conn:req", conn)
+    Davo.Endpoint.broadcast(@topic, "conn:req", conn)
   end
 end
 
