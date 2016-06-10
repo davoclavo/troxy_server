@@ -20,7 +20,7 @@ defmodule Davo.Mixfile do
      applications: [:phoenix, :phoenix_html, :cowboy, :logger, :gettext,
                     # :phoenix_ecto, :postgrex,
                     :troxy, :corsica, :httparrot, :plug_ribbon,
-                    :phoenix_live_reload, :edeliver]]
+                    :edeliver]]
   end
 
   # Specifies which paths to compile per environment.
