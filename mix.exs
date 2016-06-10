@@ -19,7 +19,7 @@ defmodule Davo.Mixfile do
     [mod: {Davo, []},
      applications: [:phoenix, :phoenix_html, :cowboy, :logger, :gettext,
                     # :phoenix_ecto, :postgrex,
-                    :troxy, :corsica, :httparrot, :plug_ribbon,
+                    :troxy, :corsica, :httparrot,
                     :edeliver]]
   end
 
@@ -36,15 +36,15 @@ defmodule Davo.Mixfile do
      # {:phoenix_ecto, "~> 2.0"},
      {:phoenix_html, "~> 2.4"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
+     {:plug_ribbon, "~> 0.2.0", only: :dev},
      {:gettext, "~> 0.9"},
      {:cowboy, "~> 1.0"},
      {:corsica, "~> 0.4"},
      {:httparrot, "~> 0.3.4"},
      # {:troxy, path: "../troxy" },
-     {:troxy, github: "davoclavo/troxy_plug", app: false},
-     {:plug_ribbon, "~> 0.2.0"},
-     # {:edeliver, "~> 1.2.8"}
-     {:edeliver, github: "boldpoker/edeliver"}
+     {:troxy, github: "davoclavo/troxy_plug"},
+     {:edeliver, "~> 1.2.8"}
+     # {:edeliver, github: "boldpoker/edeliver"}
     ]
   end
 end
