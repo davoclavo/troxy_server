@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+APP="davo" # name of your release
+
+EXRM_VERSION_MAJOR=1
+EXRM_VERSION_MINOR=0
+EXRM_VERSION_PATCH=5
+
+BUILD_HOST="troxy.davo.io" # host where to build the release
+BUILD_USER="root" # local user at build host
+BUILD_AT="/git/davo/builds/" # build directory on build host
+RELEASE_DIR="/git/davo/builds/rel/davo"
+
+STAGING_HOSTS="troxy.stg.davo.io" # staging / test hosts separated by space
+STAGING_USER="test" # local user at staging hosts
+TEST_AT="/test/davo" # deploy directory on staging hosts. default is DELIVER_TO
+
+PRODUCTION_HOSTS="troxy.davo.io" # deploy / production hosts separated by space
+PRODUCTION_USER="root" # local user at deploy hosts
+DELIVER_TO="/opt/davo" # deploy directory on production hosts
+
+# .deliver/config
+pre_erlang_clean_compile() {
+    status "Running asset compilation" # log output prepended with "----->"
+    __sync_remote " # runs the commands on the build host
+      [ -f ~/.profile ] && source ~/.profile # load profile (optional)
+      set -e # fail if any command fails (recommended)
+      cd '$BUILD_AT' # enter the build directory on the build host (required)
+
+      mkdir -p priv/static # required by the phoenix.digest task
+
+      # install npm dependencies
+      # npm --verbose install
+      npm install
+
+      # build webpack assets
+      ./node_modules/.bin/webpack -p
+
+      # run your custom task
+      APP='$APP' MIX_ENV='$TARGET_MIX_ENV' $MIX_CMD phoenix.digest $SILENCE
+    "
+}
+
+# If npm install gets killed, probs you ran out of ram
+# Add swap:
+# https://www.digitalocean.com/community/tutorials/how-to-add-swap-on-ubuntu-14-04
+
+
+
+# Install esl-erlang
+# wget -O - http://binaries.erlang-solutions.com/debian/erlang_solutions.asc | sudo apt-key add -
+# sudo apt-get update
+# sudo apt-get install esl-erlang
+
+# Add env variables to ~/.profile
+# export PORT=80
+# export HOSTNAME="troxy.davo.io"
+# export PUBLIC_IP="45.55.23.167"
+# export SECRET_KEY_BASE="5VEkFrWrJxQth6QJilNNdoMYvnlE8XG6ZigepsNwb9gW3E/1F8UP87REWiqo9Y4K"
